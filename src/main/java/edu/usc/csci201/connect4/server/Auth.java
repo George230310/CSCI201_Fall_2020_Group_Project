@@ -1,7 +1,8 @@
 /**
 * Auth.java is the middle-man class used for interfacing 
 * with the FirebaseAuthentication system in an asynchronous manner
-* Use it by evoking Auth.*() in any class within edu.usc.csci201.connect4
+* Use it by calling .getAuth().method() on an instance 
+* of a FirebaseServer (Usually shared by the Server instance)
 * 
 * @author      Mario Figueroa
 * @version     %I%, %G%
@@ -13,19 +14,19 @@ package edu.usc.csci201.connect4.server;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 
-import edu.usc.csci201.connect4.listeners.AuthEventListener;
+import edu.usc.csci201.connect4.events.AuthEventCallback.LoginEventListener;
+import edu.usc.csci201.connect4.events.AuthEventCallback.RegisterEventListener;
+
 
 public class Auth {
 	
-	private final FirebaseServer fb;
-	private final AuthEventListener authListener; 
+	private final FirebaseServer fb; 
 	
-	public Auth(FirebaseServer fb, AuthEventListener authListener) {
+	public Auth(FirebaseServer fb) {
 		this.fb = fb;
-		this.authListener = authListener;
 	}
 	
-	public void registerUser(final String email, final String password) {
+	public void registerUser(final String email, final String password, final RegisterEventListener listener) {
 		
 		new Thread(new Runnable() { 
 			public void run() { 
@@ -42,8 +43,8 @@ public class Auth {
 					errorMessage = e.getMessage();
 				} finally {
 					// Invoke the register callback of this.authListener 
-					if (errorMessage.isBlank() && authListener != null) authListener.onRegister(user);
-					else authListener.onRegisterFail(errorMessage);
+					if (errorMessage.isBlank() && listener != null) listener.onRegister(user);
+					else if (listener != null) listener.onRegisterFail(errorMessage);
 				}
 
 			}
@@ -51,7 +52,7 @@ public class Auth {
 		}).start(); 
 	}
 	
-	public void loginUser(final String email, final String password) {
+	public void loginUser(final String email, final String password, final LoginEventListener listener) {
 		
 		new Thread(new Runnable() { 
 			public void run() { 
@@ -68,8 +69,8 @@ public class Auth {
 					errorMessage = e.getMessage();
 				} finally {
 					// Invoke the register callback of this.authListener 
-					if (errorMessage.isBlank() && authListener != null) authListener.onLogin(user);
-					else authListener.onLoginFail(errorMessage);
+					if (errorMessage.isBlank() && listener != null) listener.onLogin(user);
+					else if (listener != null) listener.onLoginFail(errorMessage);
 				}
 
 			}
