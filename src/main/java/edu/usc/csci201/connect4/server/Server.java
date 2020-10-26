@@ -23,7 +23,6 @@ public class Server {
     public static void main(String[] args) {
     	
         System.out.println("Hello World!");
-//        BasicConfigurator.configure();
         
         AuthCompletionHandler authHandler = new AuthCompletionHandler(); 
         
@@ -35,12 +34,12 @@ public class Server {
         auth.loginUser("test@gmail.com", "password123", new AuthEventCallback.LoginEventListener() {
 			
         	public void onLoginFail(String err) {
-				// TODO: Custom onLoginFail callback function
+				// Custom onLoginFail callback function
         		Log.printlnServer("Unsuccessfully logged in asynchronously with a custom callback!");
 			}
 			
 			public void onLogin(UserRecord user) {
-				// TODO: Custom onLogin callback function
+				// Custom onLogin callback function
 				Log.printlnServer("Successfully logged in asynchronously with a custom callback!");
 			}
 		});
@@ -62,12 +61,12 @@ public class Server {
         db.setValueAtPathAsync("highscores", highscores, new DatabaseEventCallback.SetValueAsyncEventListener() {
 			
 			public void onSetValueAtPathAsyncFail(DatabaseReference dbr, String error) {
-				// TODO: Custom onSetValueAtPathAsyncFail callback function
+				// Custom onSetValueAtPathAsyncFail callback function
 				Log.printlnServer("Unsuccessfully set value at path asynchronously with a custom callback!");
 			}
 			
 			public void onSetValueAtPathAsync(DatabaseReference dbr) {
-				// TODO: Custom onSetValueAtPathAsyncFail callback function
+				// Custom onSetValueAtPathAsyncFail callback function
 				Log.printlnServer("Successfully set value at path asynchronously with a custom callback!");
 			}
 		});
