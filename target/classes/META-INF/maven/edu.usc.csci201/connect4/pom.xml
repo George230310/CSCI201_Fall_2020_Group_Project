@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>edu.usc.csci201</groupId>
+  <artifactId>connect4</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>connect4</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+  
+	<dependency>
+	  <groupId>com.google.firebase</groupId>
+	  <artifactId>firebase-admin</artifactId>
+	  <version>7.0.1</version>
+	</dependency>
+	   <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-api</artifactId>
+       <version>1.7.5</version>
+   </dependency>
+   <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-log4j12</artifactId>
+       <version>1.7.5</version>
+   </dependency>
+
+  </dependencies>
+</project>
+
+	<!-- https://mvnrepository.com/artifact/com.firebase/firebase-client-jvm -->
+<!-- 	<dependency>
+	    <groupId>com.firebase</groupId>
+	    <artifactId>firebase-client-jvm</artifactId>
+	    <version>2.5.2</version>
+	</dependency> -->
