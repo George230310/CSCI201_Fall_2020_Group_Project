@@ -13,7 +13,9 @@ public class Server {
         FirebaseServer fb = new FirebaseServer (CREDENTIALS_PATH);
         Auth auth = new Auth(fb, new AuthCLI());
         
-        auth.registerUser("denisandcake@gmail.com", "password123");
+        // Examples
+        auth.registerUser("email@gmail.com", "password123");
+        auth.loginUser("email@gmail.com", "password123");
         
     }
     

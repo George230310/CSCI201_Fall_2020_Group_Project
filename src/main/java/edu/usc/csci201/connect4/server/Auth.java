@@ -51,6 +51,32 @@ public class Auth {
 		}).start(); 
 	}
 	
+	public void loginUser(final String email, final String password) {
+		
+		new Thread(new Runnable() { 
+			public void run() { 
+				
+				UserRecord user = null;
+				String errorMessage = "";
+				
+				// Attempt to register a user using the FirebaseServer class
+		        try {
+					user = fb.login(email, password);
+				} catch (FirebaseAuthException e) {
+					errorMessage = e.getMessage();
+				} catch (IllegalArgumentException e) {
+					errorMessage = e.getMessage();
+				} finally {
+					// Invoke the register callback of this.authListener 
+					if (errorMessage.isBlank() && authListener != null) authListener.onLogin(user);
+					else authListener.onLoginFail(errorMessage);
+				}
+
+			}
+			
+		}).start(); 
+	}
+	
 
 } 
 
