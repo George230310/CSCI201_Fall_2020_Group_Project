@@ -12,6 +12,7 @@
 
 package edu.usc.csci201.connect4.events;
 
+import com.google.firebase.auth.ExportedUserRecord;
 import com.google.firebase.auth.UserRecord;
 
 public class AuthEventCallback {
@@ -19,12 +20,17 @@ public class AuthEventCallback {
 	private interface AuthEventListener {}
 	
 	public interface LoginEventListener extends AuthEventListener { 
-		 public void onLogin(UserRecord user);
-		 public void onLoginFail(String err);
+		 public void onLogin(UserRecord user, Object sender);
+		 public void onLoginFail(String err, Object sender);
 	} 
 	
 	public interface RegisterEventListener extends AuthEventListener { 		
-		 public void onRegister(UserRecord user);
-		 public void onRegisterFail(String err);
+		public void onRegister(UserRecord user, Object sender);
+		public void onRegisterFail(String err, Object sender);
 	} 
+	
+	public interface ListEventListener extends AuthEventListener {
+		public void onList(ExportedUserRecord[] users, Object sender);
+		public void onListFail(String err, Object sender);
+	}
 }

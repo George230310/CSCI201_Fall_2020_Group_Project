@@ -7,7 +7,7 @@
 * @since       1.0
 */
 
-package edu.usc.csci201.connect4.cli;
+package edu.usc.csci201.connect4.events;
 
 import com.google.firebase.database.DatabaseReference;
 
@@ -17,13 +17,13 @@ import edu.usc.csci201.connect4.utils.Log;
 public class DatabaseCompletionHandler implements SetValueAsyncEventListener {
 
 	public void onSetValueAtPathAsync(DatabaseReference dbr) {
-		Log.printlnServer("Asynchronous callback for onSetAsync() triggered."); 
-		Log.printlnServer("DatabaseReference url is " + dbr.toString());
+		Log.printServer("Asynchronous callback for onSetAsync() triggered."); 
+		Log.printServer("DatabaseReference url is " + dbr.toString());
 	}
 
 	public void onSetValueAtPathAsyncFail(DatabaseReference dbr, String error) {
-		Log.printlnServer("Asynchronous callback for onSetAsyncFail() triggered."); 
-		Log.printlnServer("DatabaseReference url is " + dbr.toString() + " error message is " + error);
+		Log.printServer("Asynchronous callback for onSetAsyncFail() triggered."); 
+		Log.printServer("DatabaseReference url is " + dbr.toString() + " error message is " + error);
 	}
 	
 	public class SetValueAsyncCompletionHandler implements SetValueAsyncEventListener { 

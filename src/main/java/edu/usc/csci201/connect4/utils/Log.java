@@ -2,11 +2,15 @@ package edu.usc.csci201.connect4.utils;
 
 public final class Log {
 	
-	public static void printlnServer(String s) {
+	public static void printServer(String s) {
 		System.out.println("[Server] " + s);
 	}
 	
-	public static void printlnClient(String s) {
+	public static void printConsole(String s) {
+		System.out.println("[Console] " + s);
+	}
+	
+	public static void printClient(String s) {
 		System.out.println("[Client] " + s);
 	}
 	

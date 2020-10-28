@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.ExportedUserRecord;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
@@ -52,7 +53,7 @@ public class FirebaseServer {
 			this.firebaseDatabase = FirebaseDatabase.getInstance();
 			
 		} catch (IOException e) {
-			Log.printlnServer("Failed to find file for the Firebase GoogleCredentials");
+			Log.printServer("Failed to find file for the Firebase GoogleCredentials");
 		}
 		
 	}
@@ -97,6 +98,10 @@ public class FirebaseServer {
 		request.setDisplayName(Utils.encrypt(pass));
 		
 		return firebaseAuth.createUser(request);
+	}
+	
+	public Iterable<ExportedUserRecord> listUsers() throws FirebaseAuthException {
+		return firebaseAuth.listUsers(null, 100).iterateAll();
 	}
 
 }

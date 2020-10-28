@@ -2,13 +2,15 @@ package edu.usc.csci201.connect4.server;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.database.DatabaseReference;
 
-import edu.usc.csci201.connect4.cli.AuthCompletionHandler;
-import edu.usc.csci201.connect4.cli.DatabaseCompletionHandler;
+import edu.usc.csci201.connect4.events.AuthCompletionHandler;
 import edu.usc.csci201.connect4.events.AuthEventCallback;
+import edu.usc.csci201.connect4.events.DatabaseCompletionHandler;
 import edu.usc.csci201.connect4.events.DatabaseEventCallback;
 import edu.usc.csci201.connect4.utils.Log;
 
@@ -22,25 +24,35 @@ public class Server {
 	
     public static void main(String[] args) {
     	
+    	// Create 3 thread for cli, database, and network
+		ExecutorService pool = Executors.newFixedThreadPool(3);
+		
+		pool.execute(new ServerCLI());
+		pool.shutdown();
+		
+		while(!pool.isTerminated()) { }
+		Log.printServer("Server stopped.");
+    }
+    
+    public void test() {
         System.out.println("Hello World!");
         
-        AuthCompletionHandler authHandler = new AuthCompletionHandler(); 
-        
-        
+
         // Example for logging/registering with pre-defined completion handler
         // auth.registerUser("email@gmail.com", "password123", authHandler);
+        AuthCompletionHandler authHandler = new AuthCompletionHandler(this); 
         
         auth.loginUser("email@gmail.com", "password123", authHandler);
         auth.loginUser("test@gmail.com", "password123", new AuthEventCallback.LoginEventListener() {
 			
-        	public void onLoginFail(String err) {
+        	public void onLoginFail(String err, Object sender) {
 				// Custom onLoginFail callback function
-        		Log.printlnServer("Unsuccessfully logged in asynchronously with a custom callback!");
+        		Log.printServer("Unsuccessfully logged in asynchronously with a custom callback!");
 			}
 			
-			public void onLogin(UserRecord user) {
+			public void onLogin(UserRecord user, Object sender) {
 				// Custom onLogin callback function
-				Log.printlnServer("Successfully logged in asynchronously with a custom callback!");
+				Log.printServer("Successfully logged in asynchronously with a custom callback!");
 			}
 		});
        
@@ -62,15 +74,14 @@ public class Server {
 			
 			public void onSetValueAtPathAsyncFail(DatabaseReference dbr, String error) {
 				// Custom onSetValueAtPathAsyncFail callback function
-				Log.printlnServer("Unsuccessfully set value at path asynchronously with a custom callback!");
+				Log.printServer("Unsuccessfully set value at path asynchronously with a custom callback!");
 			}
 			
 			public void onSetValueAtPathAsync(DatabaseReference dbr) {
 				// Custom onSetValueAtPathAsyncFail callback function
-				Log.printlnServer("Successfully set value at path asynchronously with a custom callback!");
+				Log.printServer("Successfully set value at path asynchronously with a custom callback!");
 			}
 		});
-        
     }
     
 }
