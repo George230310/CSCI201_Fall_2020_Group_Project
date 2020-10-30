@@ -22,6 +22,9 @@ public class HandleGameSession implements Runnable{
 		 
 		 
 		
+		
+		
+		 Save game records to the database
 		*******************************/
 		
 		Server.nameToServerThreads.remove(myGameName);
