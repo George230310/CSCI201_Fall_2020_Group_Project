@@ -9,7 +9,6 @@ public class Server {
 	
 	public static int serverPort = 8080;
 	public static String serverName = "localhost";
-	public static final Scanner scan = new Scanner(System.in);
 	protected static ConcurrentHashMap<String, ArrayList<ServerThread>> nameToServerThreads;
 	
 	//main method for server class

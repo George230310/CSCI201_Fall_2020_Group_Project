@@ -33,6 +33,7 @@ public class ServerThread extends Thread {
 			writingToPlayer.println(promptForCredential);
 			
 			String userName = readingFromPlayer.readLine();
+			System.out.println("user enter name: " + userName);
 			
 			/************************************
 			 Verify the existence of username with
@@ -148,6 +149,10 @@ public class ServerThread extends Thread {
 						(playerSocket, Server.nameToServerThreads.get(GameName).get(0).playerSocket, GameName)).start();
 			}
 			
+		}
+		catch(SocketException se)
+		{
+			System.out.println("connection reset");
 		}
 		catch(IOException e)
 		{
