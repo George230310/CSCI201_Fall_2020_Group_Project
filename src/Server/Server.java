@@ -27,12 +27,12 @@ public class Server {
 		//establish server socket
 		try(ServerSocket ss = new ServerSocket(serverPort))
 		{
-			System.out.println("Server started at port: " + serverPort);
+			System.out.println(TimestampUtil.getTimestamp() + " Server started at port: " + serverPort);
 			//looping and accept unlimited number of players
 			while(true)
 			{
 				Socket newPlayerSocket = ss.accept();
-				System.out.println("Accepted a new player");
+				System.out.println(TimestampUtil.getTimestamp() + " Accepted a new player");
 				new ServerThread(newPlayerSocket).start();
 			}
 		}

@@ -23,5 +23,7 @@ public class HandleGameSession implements Runnable{
 		 
 		
 		*******************************/
+		
+		Server.nameToServerThreads.remove(myGameName);
 	}
 }

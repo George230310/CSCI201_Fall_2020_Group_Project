@@ -108,6 +108,13 @@ public class Player implements Runnable{
 				System.out.println(fromServer.readLine());
 			}
 			
+			/*********************************
+			 
+			 game logic goes here
+			 
+			 
+			**********************************/
+			
 			serverSocket.close();
 			fromServer.close();
 			toServer.close();
@@ -118,7 +125,7 @@ public class Player implements Runnable{
 		}
 		catch(SocketException se)
 		{
-			System.out.println("connection reset");
+			System.out.println("Connection reset");
 		}
 		catch(IOException ie)
 		{

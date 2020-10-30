@@ -45,7 +45,7 @@ public class ServerThread extends Thread {
 			writingToPlayer.println("Please provide your username: ");
 			
 			String userName = readingFromPlayer.readLine();
-			System.out.println("user enter name: " + userName);
+			System.out.println(TimestampUtil.getTimestamp() + " user enter name: " + userName);
 			
 			/************************************
 			 Verify the existence of username with
@@ -58,7 +58,7 @@ public class ServerThread extends Thread {
 			writingToPlayer.println("Please provide your password: ");
 			
 			String password = readingFromPlayer.readLine();
-			System.out.println("user enter password: " + password);
+			System.out.println(TimestampUtil.getTimestamp() + " user enter password: " + password);
 			
 			/************************************
 			 Verify the existence of password with
@@ -98,7 +98,7 @@ public class ServerThread extends Thread {
 					{
 						input_fails = false;
 						writingToPlayer.println(input_fails);
-						System.out.println("A new game named " + newGameName + " has been created");
+						System.out.println(TimestampUtil.getTimestamp() + " A new game named " + newGameName + " has been created");
 					}
 				}
 				
@@ -170,6 +170,7 @@ public class ServerThread extends Thread {
 				}
 				
 				//start the game session
+				System.out.println(TimestampUtil.getTimestamp() + " " + GameName + " has been started");
 				new Thread
 				(new HandleGameSession
 						(Server.nameToServerThreads.get(GameName).get(0).playerSocket, playerSocket, GameName)).start();
@@ -178,7 +179,7 @@ public class ServerThread extends Thread {
 		}
 		catch(SocketException se)
 		{
-			System.out.println("connection reset");
+			System.out.println("Connection reset");
 		}
 		catch(IOException e)
 		{
