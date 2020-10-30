@@ -19,6 +19,19 @@ public class ServerThread extends Thread {
 		playerSocket = s;
 	}
 	
+	public void signalMe()
+	{
+		lock.lock();
+		try
+		{
+			startGame.signal();
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
 	public void run()
 	{
 		//prompt the client for credentials
@@ -29,8 +42,7 @@ public class ServerThread extends Thread {
 			readingFromPlayer = new BufferedReader(new InputStreamReader(playerSocket.getInputStream()));
 			
 			//ask the player for credentials
-			String promptForCredential = "Please provide your username: ";
-			writingToPlayer.println(promptForCredential);
+			writingToPlayer.println("Please provide your username: ");
 			
 			String userName = readingFromPlayer.readLine();
 			System.out.println("user enter name: " + userName);
@@ -43,10 +55,10 @@ public class ServerThread extends Thread {
 			 
 			*************************************/
 			
-			String promptForPassword = "Please provide your password: ";
-			writingToPlayer.println(promptForPassword);
+			writingToPlayer.println("Please provide your password: ");
 			
 			String password = readingFromPlayer.readLine();
+			System.out.println("user enter password: " + password);
 			
 			/************************************
 			 Verify the existence of password with
@@ -57,33 +69,36 @@ public class ServerThread extends Thread {
 			*************************************/
 			
 			//once the credentials are verified, prompt the player for options
-			String promptForOptions = "Enter 1 to start a new game\nEnter 2 to join an existing game";
-			writingToPlayer.println(promptForOptions);
+			writingToPlayer.println("1) Start a new game 2) Join an existing game");
 			
 			String option = readingFromPlayer.readLine();
-			option = option.trim();
 			
 			//make a new game --- need error checking here
 			if(option.equals("1"))
 			{
 				//ask player for a game name
-				String promptForGameName = "Enter a new game name: ";
-				writingToPlayer.println(promptForGameName);
+				writingToPlayer.println("Enter a new game name: ");
 				
+				//validate game name
 				boolean input_fails = true;
+				writingToPlayer.println(input_fails);
 				String newGameName = readingFromPlayer.readLine();
 				while(input_fails)
 				{
-					if(Server.nameToServerThreads.containsKey(newGameName))
+					boolean gameFound = Server.nameToServerThreads.containsKey(newGameName);
+					writingToPlayer.println(gameFound);
+					//if the game exists
+					if(gameFound)
 					{
-						String repromptForGameName = "Game already exists, enter a new game name: ";
-						writingToPlayer.println(repromptForGameName);
+						writingToPlayer.println("Game already exists, enter a new game name: ");
 						
 						newGameName = readingFromPlayer.readLine();
 					}
 					else
 					{
 						input_fails = false;
+						writingToPlayer.println(input_fails);
+						System.out.println("A new game named " + newGameName + " has been created");
 					}
 				}
 				
@@ -96,7 +111,7 @@ public class ServerThread extends Thread {
 				lock.lock();
 				try
 				{
-					writingToPlayer.println("Waiting for player 2");
+					writingToPlayer.println("Waiting for player 2...");
 					startGame.await();
 				}
 				catch(InterruptedException ie)
@@ -109,25 +124,36 @@ public class ServerThread extends Thread {
 					lock.unlock();
 				}
 			}
-			//join an existing game ---- DOES NOT check correct number of players now
-			else if(option.equals("2"))
+			//join an existing game
+			else
 			{
-				String promptForGameName = "Enter a game name: ";
-				writingToPlayer.println(promptForGameName);
+				writingToPlayer.println("Enter a game name: ");
 				
 				boolean input_fails = true;
+				writingToPlayer.println(input_fails);
 				String GameName = readingFromPlayer.readLine();
 				while(input_fails)
 				{
-					if(Server.nameToServerThreads.containsKey(GameName))
+					boolean gameFound = Server.nameToServerThreads.containsKey(GameName);
+					writingToPlayer.println(gameFound);
+					if(gameFound)
 					{
-						
-						input_fails = false;
+						//if the game exists but is full
+						boolean gameFull = (Server.nameToServerThreads.get(GameName).size() >= 2);
+						writingToPlayer.println(gameFull);
+						if(gameFull)
+						{
+							writingToPlayer.println("Game already full, enter a new game name: ");
+							GameName = readingFromPlayer.readLine();
+						}
+						else
+						{
+							input_fails = false;
+						}						
 					}
 					else
 					{
-						String repromptForGameName = "No such game exists, enter a new game name: ";
-						writingToPlayer.println(repromptForGameName);
+						writingToPlayer.println("No such game exists, enter a new game name: ");
 						
 						GameName = readingFromPlayer.readLine();
 					}
@@ -136,7 +162,7 @@ public class ServerThread extends Thread {
 				//register me to the game and wake up the other player
 				Server.nameToServerThreads.get(GameName).add(this);
 				writingToPlayer.println("You start the game as player 2");
-				Server.nameToServerThreads.get(GameName).get(0).startGame.signal();
+				Server.nameToServerThreads.get(GameName).get(0).signalMe();
 				try {
 					Server.nameToServerThreads.get(GameName).get(0).join();
 				} catch (InterruptedException e) {
@@ -146,7 +172,7 @@ public class ServerThread extends Thread {
 				//start the game session
 				new Thread
 				(new HandleGameSession
-						(playerSocket, Server.nameToServerThreads.get(GameName).get(0).playerSocket, GameName)).start();
+						(Server.nameToServerThreads.get(GameName).get(0).playerSocket, playerSocket, GameName)).start();
 			}
 			
 		}

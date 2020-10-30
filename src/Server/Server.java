@@ -9,7 +9,7 @@ public class Server {
 	
 	public static int serverPort = 8080;
 	public static String serverName = "localhost";
-	protected static ConcurrentHashMap<String, ArrayList<ServerThread>> nameToServerThreads;
+	protected static ConcurrentHashMap<String, ArrayList<ServerThread>> nameToServerThreads = new ConcurrentHashMap<>();
 	
 	//main method for server class
 	public static void main(String[] args)
@@ -32,7 +32,7 @@ public class Server {
 			while(true)
 			{
 				Socket newPlayerSocket = ss.accept();
-				System.out.println("Accept a new player");
+				System.out.println("Accepted a new player");
 				new ServerThread(newPlayerSocket).start();
 			}
 		}
