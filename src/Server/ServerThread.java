@@ -48,7 +48,7 @@ public class ServerThread extends Thread {
 			System.out.println(TimestampUtil.getTimestamp() + " user enter name: " + userName);
 			
 			/************************************
-			 Verify the existence of username with
+			 TODO: Verify the existence of username with
 			 database
 			 
 			 
@@ -61,7 +61,7 @@ public class ServerThread extends Thread {
 			System.out.println(TimestampUtil.getTimestamp() + " user enter password: " + password);
 			
 			/************************************
-			 Verify the existence of password with
+			 TODO: Verify the existence of password with
 			 database
 			 
 			 

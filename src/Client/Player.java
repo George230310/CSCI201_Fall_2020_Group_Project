@@ -6,8 +6,9 @@ import java.util.*;
 
 public class Player implements Runnable{
 	
-	String hostname;
-	int myPort;
+	private String hostname;
+	private String username;
+	private int myPort;
 	public static final Scanner scan = new Scanner(System.in);
 	private Socket serverSocket;
 	private PrintWriter toServer;
@@ -30,7 +31,7 @@ public class Player implements Runnable{
 			
 			//read username prompt from server and ask for username
 			System.out.print(fromServer.readLine());
-			String username = scan.nextLine();
+			username = scan.nextLine();
 			toServer.println(username);
 			
 			//read password prompt from server and ask for password
@@ -110,7 +111,7 @@ public class Player implements Runnable{
 			
 			/*********************************
 			 
-			 game logic goes here
+			 TODO: Implement the player side game loop
 			 
 			 
 			**********************************/

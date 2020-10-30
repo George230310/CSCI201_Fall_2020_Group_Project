@@ -8,6 +8,8 @@ public class HandleGameSession implements Runnable{
 	private Socket player2;
 	private String myGameName;
 	
+	//TODO: add more member fields for reading and writing from players
+	
 	public HandleGameSession(Socket p1, Socket p2, String gName)
 	{
 		player1 = p1;
@@ -18,13 +20,13 @@ public class HandleGameSession implements Runnable{
 	public void run()
 	{
 		/******************************
-		 Handle the game
+		 TODO: Handle the game
 		 
 		 
 		
 		
 		
-		 Save game records to the database
+		 TODO: Save game records to the database
 		*******************************/
 		
 		Server.nameToServerThreads.remove(myGameName);
