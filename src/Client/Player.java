@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import Server.Server;
+
 public class Player implements Runnable{
 	
 	private String hostname;
@@ -20,6 +22,11 @@ public class Player implements Runnable{
 		myPort = port;
 	}
 	
+	//main method to run the player interface of the game
+	public static void main(String[] args) {
+		new Thread(new Player(Server.serverName, Server.serverPort)).start();
+	}
+	
 	public void run()
 	{
 		try
@@ -29,18 +36,23 @@ public class Player implements Runnable{
 			fromServer = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
 			toServer = new PrintWriter(serverSocket.getOutputStream(), true);
 			
-			//read username prompt from server and ask for username
-			System.out.print(fromServer.readLine());
+			//ascii art welcome slogan
+			System.out.println("==============================");
+			System.out.println("     Connect 4 2P Game !!!");
+			System.out.println("==============================");
+			
+			//ask for username and send to server
+			System.out.print("Please provide your username: ");
 			username = scan.nextLine();
 			toServer.println(username);
 			
-			//read password prompt from server and ask for password
-			System.out.print(fromServer.readLine());
+			//ask for password and send to server
+			System.out.print("Please provide your password: ");
 			String password = scan.nextLine();
 			toServer.println(password);
 			
-			//read option prompt from server and ask for option
-			System.out.println(fromServer.readLine());
+			//rask for option
+			System.out.println("1) Start a new game\n2) Join an existing game");
 			String option = scan.nextLine();
 			option = option.trim();
 			toServer.println(option);
@@ -48,7 +60,7 @@ public class Player implements Runnable{
 			//communicate with server to create a new game
 			if(option.equals("1"))
 			{
-				System.out.print(fromServer.readLine());
+				System.out.print("Enter a new game name: ");
 				boolean input_fails = Boolean.parseBoolean(fromServer.readLine());
 				String newGameName = scan.nextLine();
 				toServer.println(newGameName);
@@ -57,12 +69,13 @@ public class Player implements Runnable{
 					boolean gameFound = Boolean.parseBoolean(fromServer.readLine());
 					if(gameFound)
 					{
-						System.out.print(fromServer.readLine());
+						System.out.print("Game already exists, enter a new game name: ");
 						newGameName = scan.nextLine();
+						toServer.println(newGameName);
 					}
 					else
 					{
-						input_fails = Boolean.parseBoolean(fromServer.readLine());
+						input_fails = false;
 					}
 				}
 				
@@ -75,7 +88,7 @@ public class Player implements Runnable{
 			//communicate with server to join a game
 			else
 			{
-				System.out.print(fromServer.readLine());
+				System.out.print("Enter a game name: ");
 				boolean input_fails = Boolean.parseBoolean(fromServer.readLine());
 				String existingGameName = scan.nextLine();
 				toServer.println(existingGameName);
@@ -88,7 +101,7 @@ public class Player implements Runnable{
 						boolean gameFull = Boolean.parseBoolean(fromServer.readLine());
 						if(gameFull)
 						{
-							System.out.print(fromServer.readLine());
+							System.out.print("Game already full, enter a new game name: ");
 							String newGameName = scan.nextLine();
 							toServer.println(newGameName);
 						}
@@ -99,7 +112,7 @@ public class Player implements Runnable{
 					}
 					else
 					{
-						System.out.print(fromServer.readLine());
+						System.out.print("No such game exists, enter a new game name: ");
 						String newGameName = scan.nextLine();
 						toServer.println(newGameName);
 					}
@@ -111,7 +124,8 @@ public class Player implements Runnable{
 			
 			/*********************************
 			 
-			 TODO: Implement the player side game loop
+			 TODO: Implement the player side game loop.
+			 This loop will communicate with HandleGameSession class
 			 
 			 
 			**********************************/
