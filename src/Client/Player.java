@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import Board.Board;
 import Server.Server;
 
 public class Player implements Runnable{
@@ -15,6 +16,11 @@ public class Player implements Runnable{
 	private Socket serverSocket;
 	private PrintWriter toServer;
 	private BufferedReader fromServer;
+	
+	//game related data fields
+	private Board playerBoard = new Board();
+	private boolean isMyTurn = true;
+	private boolean isP1 = true;
 	
 	public Player(String host, int port)
 	{
@@ -84,6 +90,9 @@ public class Player implements Runnable{
 				
 				//print the game start message
 				System.out.println(fromServer.readLine());
+				
+				isMyTurn = true;
+				isP1 = true;
 			}
 			//communicate with server to join a game
 			else
@@ -120,6 +129,9 @@ public class Player implements Runnable{
 				
 				//print the start message
 				System.out.println(fromServer.readLine());
+				
+				isMyTurn = false;
+				isP1 = false;
 			}
 			
 			/*********************************
@@ -129,6 +141,58 @@ public class Player implements Runnable{
 			 
 			 
 			**********************************/
+			
+			//run game loop
+			boolean continuePlay = true;
+			playerBoard.printBoard();
+			while(continuePlay)
+			{
+				if(isMyTurn)
+				{
+					boolean input_fails = true;
+					int myMove = 0;
+					System.out.print("It is your turn now, enter an integer for column: ");
+					while(input_fails)
+					{
+						try
+						{
+							myMove = Integer.parseInt(scan.nextLine());
+							input_fails = false;
+						}
+						catch(NumberFormatException e)
+						{
+							System.out.print("Please enter an integer: ");
+						}
+					}
+					
+					playerBoard.placePiece(myMove, isP1);
+					toServer.println(myMove);
+					isMyTurn = false;
+					
+					//print board state after my move
+					playerBoard.printBoard();
+					
+					//TODO: break out of game loop when the server thinks someone wins
+					//e.g. continuePlay = Boolean.parseBoolean(fromServer.readLine())
+				}
+				else
+				{
+					System.out.println("Waiting for the other player to move...");
+					int otherPlayerMove = Integer.parseInt(fromServer.readLine());
+					playerBoard.placePiece(otherPlayerMove, !isP1);
+					playerBoard.printBoard();
+					System.out.println("The other player places a piece at column " + otherPlayerMove);
+					
+					isMyTurn = true;
+					
+					//TODO: break out of game loop when the server thinks someone wins
+					//e.g. continuePlay = Boolean.parseBoolean(fromServer.readLine())
+				}
+			}
+			
+			//TODO: receive the game result
+			
+			//TODO: inform the server my username?? and save my record
 			
 			serverSocket.close();
 			fromServer.close();

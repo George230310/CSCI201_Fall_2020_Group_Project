@@ -117,7 +117,7 @@ public class ServerThread extends Thread {
 				}
 				finally
 				{
-					writingToPlayer.println("You start the game as player 1");
+					writingToPlayer.println("You start the game as player 1 with 'o'");
 					lock.unlock();
 				}
 			}
@@ -157,7 +157,7 @@ public class ServerThread extends Thread {
 				
 				//register me to the game list and wake up the other player
 				Server.nameToServerThreads.get(GameName).add(this);
-				writingToPlayer.println("You start the game as player 2");
+				writingToPlayer.println("You start the game as player 2 with 'x'");
 				Server.nameToServerThreads.get(GameName).get(0).signalMe();
 				try {
 					Server.nameToServerThreads.get(GameName).get(0).join();
