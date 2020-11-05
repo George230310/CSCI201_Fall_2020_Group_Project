@@ -29,16 +29,20 @@ public class ClientHandler {
 		private final String email;
 		private final String password;
 		private String response;
+		private Boolean isSuccessful;
 		
 		public RegisterCommand(String email, String password) {
 			this.email = email;
 			this.password = password;
+			this.isSuccessful = false;
 		}
 		
 		public void setResponse(String response) { this.response = response; }
+		public void setSuccessful()  { this.isSuccessful = true; }
 		public String getResponse() { return this.response; }
 		public String getEmail() { return this.email; }
 		public String getPassword() { return this.password; }
+		public Boolean isSuccessful() { return isSuccessful; }
 	}
 	
 	public static class LoginCommand implements ClientCommand, Serializable {
@@ -48,18 +52,112 @@ public class ClientHandler {
 		private final String email;
 		private final String password;
 		private String response;
+		private Boolean isSuccessful;
 		
 		public LoginCommand(String email, String password) {
 			this.email = email;
 			this.password = password;
+			this.isSuccessful = false;
 		}
 		
 		public void setResponse(String response) { this.response = response; }
+		public void setSuccessful()  { this.isSuccessful = true; }
 		public String getResponse() { return this.response; }
 		public String getEmail() { return this.email; }
 		public String getPassword() { return this.password; }
+		public Boolean isSuccessful() { return isSuccessful; }
 	}
 	
+	public static class CreateLobbyCommand implements ClientCommand, Serializable {
+
+		private static final long serialVersionUID = -1130979628160107144L;
+		private String lobbyName;
+		private String response;
+		private Boolean isSuccessful;
+		
+		public CreateLobbyCommand(String lobby) {
+			this.lobbyName = lobby;
+			this.isSuccessful = false;
+		}
+		
+		public void setResponse(String response) { this.response = response; }
+		public void setSuccessful()  { this.isSuccessful = true; }
+		public String getResponse() { return this.response; }
+		public String getLobby() { return this.lobbyName; }
+		public Boolean isSuccessful() { return isSuccessful; }
+	}
+	
+	public static class GetHighScoresCommand implements ClientCommand, Serializable {
+
+		private static final long serialVersionUID = 2360988652046736774L;
+		private String response;
+		
+		public GetHighScoresCommand() {}
+		
+		public void setResponse(String response) { this.response = response; }
+		public String getResponse() { return this.response; }
+	}
+	
+	public static class JoinLobbyCommand implements ClientCommand, Serializable {
+
+		private static final long serialVersionUID = -4863303503934195L;
+		private String lobbyName;
+		private String response;
+		private Boolean isSuccessful;
+		
+		public JoinLobbyCommand(String lobby) {
+			this.lobbyName = lobby;
+			this.isSuccessful = false;
+		}
+		
+		public void setResponse(String response) { this.response = response; }
+		public void setSuccessful()  { this.isSuccessful = true; }
+		public String getResponse() { return this.response; }
+		public String getLobby() { return this.lobbyName; }
+		public Boolean isSuccessful() { return isSuccessful; }
+	}
+	
+	public static class StartGameCommand implements ClientCommand, Serializable {
+
+		private static final long serialVersionUID = -6631300258431935054L;
+		private String response;
+		private Boolean player1; 
+		
+		public StartGameCommand(Boolean player1) {
+			this.player1 = player1;
+		};
+		
+		public void setResponse(String response) { this.response = response; }
+		public String getResponse() { return this.response; }
+		public Boolean isPlayer1() { return this.player1; }
+	}
+	
+	public static class GameCommand implements ClientCommand, Serializable {
+
+		private static final long serialVersionUID = 1456982245554602250L;
+		private int colNum;
+		private String response;
+		private Boolean isSuccessful;
+		private int responseCol;
+		private Boolean gameOver;
+		private Boolean player1Wins;
+		
+		public GameCommand(int col) {
+			this.colNum = col;
+			this.isSuccessful = false;
+		}
+		
+		public void setResponse(String response) { this.response = response; }
+		public void setSuccessful()  { this.isSuccessful = true; }
+		public void setResponseCol(int col) {this.responseCol = col; this.gameOver = false;}
+		public void setGameOver(Boolean player1Wins) {this.player1Wins = player1Wins; gameOver = true;}
+		public int getMove() { return this.colNum; }
+		public String getResponse() { return this.response; }
+		public int getReturnMove() { return this.responseCol; }
+		public Boolean isGameOver() { return this.gameOver; }
+		public Boolean isPlayer1Win() { return this.player1Wins; }
+		public Boolean isSuccessful() { return isSuccessful; }
+	}
 }
 
 class ClientCompletionHandler implements LoginEventListener, RegisterEventListener, ListEventListener {
