@@ -7,12 +7,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
 import edu.usc.csci201.connect4.server.ClientHandler.LoginCommand;
 import edu.usc.csci201.connect4.server.ClientHandler.RegisterCommand;
+import edu.usc.csci201.connect4.server.ClientHandler.*;
 import edu.usc.csci201.connect4.utils.Log;
 
 public class Server {
@@ -21,6 +23,12 @@ public class Server {
 	private static final String CREDENTIALS_PATH = "connect4-73290-firebase-adminsdk-tzztu-d4ca2ea0cd.json";
 	private static final FirebaseServer fb = new FirebaseServer(CREDENTIALS_PATH);
 	public static final int port = 25666;
+	
+	//game universe
+	protected static ConcurrentHashMap<String, ArrayList<ClientReader>> gameUniverse 
+	= new ConcurrentHashMap<String, ArrayList<ClientReader>>();
+	
+	
 	
     public static void main(String[] args) {
     	
@@ -136,6 +144,34 @@ final class ClientReader extends Thread {
 			fb.registerUser(((RegisterCommand) rawCommand).getEmail(), ((RegisterCommand) rawCommand).getPassword(), handler, this);
 		} else if (rawCommand.getClass() == LoginCommand.class) {
 			fb.loginUser(((LoginCommand) rawCommand).getEmail(), ((LoginCommand) rawCommand).getPassword(), handler, this);
+		} else if (rawCommand.getClass() == CreateLobbyCommand.class) {
+			//search for possible lobby name duplicates
+			String name_input = ((CreateLobbyCommand)rawCommand).getLobby();
+			
+			try
+			{
+				//if lobby name already exists
+				if(Server.gameUniverse.contains(name_input))
+				{
+					((CreateLobbyCommand)rawCommand).setResponse("The lobby name already exists");
+					os.writeObject(rawCommand);
+				}
+				//create a new game
+				else
+				{
+					ArrayList<ClientReader> clients = new ArrayList<ClientReader>();
+					clients.add(this);
+					Server.gameUniverse.put(name_input, clients);
+					
+					((CreateLobbyCommand)rawCommand).setResponse("Successfully create the lobby named " + name_input);
+					((CreateLobbyCommand)rawCommand).setSuccessful();
+					os.writeObject(rawCommand);
+				}
+			}
+			catch(IOException ie)
+			{
+				Log.printServer("File I/O error");
+			}
 		}
 	}
 	

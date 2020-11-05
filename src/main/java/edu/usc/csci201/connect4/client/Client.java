@@ -12,6 +12,7 @@ import edu.usc.csci201.connect4.server.Server;
 import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
 import edu.usc.csci201.connect4.server.ClientHandler.LoginCommand;
 import edu.usc.csci201.connect4.server.ClientHandler.RegisterCommand;
+import edu.usc.csci201.connect4.server.ClientHandler.*;
 import edu.usc.csci201.connect4.utils.Log;
 
 public class Client {
@@ -40,6 +41,12 @@ public class Client {
 			socket = new Socket("localhost", Server.port);
 			
 			Log.printClient("Connected to Server on port " + Server.port);
+			
+			//more guidance on user interface
+			System.out.println("Enter 'help' for the list of avalaible commands");
+			System.out.println("Enter 'help command' for detailed instructions");
+			System.out.println("For example, 'help login'");
+			
 			os = new ObjectOutputStream(socket.getOutputStream());
 			is = new ObjectInputStream(socket.getInputStream());
 
@@ -68,6 +75,16 @@ public class Client {
 		try {
 			ClientCommand rawCmd = (ClientCommand) is.readObject();
 			if (rawCmd.getResponse() != "") Log.printServer(rawCmd.getResponse());
+			
+			//handle the create lobby response
+			if(rawCmd.getClass() == CreateLobbyCommand.class)
+			{
+				if(((CreateLobbyCommand)rawCmd).isSuccessful())
+				{
+					System.out.println("Waiting for another player to join...");
+				}
+			}
+			
 		} catch (ClassNotFoundException e) {
 			Log.printConsole("Failed to parse object from reading object stream. " + e.getMessage());
 		} catch (IOException e) {
@@ -93,7 +110,56 @@ public class Client {
 			command = new RegisterCommand(args[1], args[2]);
 		} else if (args[0].equals("login")) {
 			command = new LoginCommand(args[1], args[2]);
-		} else {
+		} else if(args[0].equals("guest")) {
+			//continue to interact as a guest
+			System.out.println("You will continue as guest:");
+			System.out.println("1)Create a new game\n2)Join an existing game");
+			
+			//decide to create a new game or join an existing one
+			//also do error checking for input
+			boolean input_fails = true;
+			int option = 0;
+			while(input_fails)
+			{
+				try
+				{
+					String line = scanner.nextLine();
+					option = Integer.parseInt(line);
+					
+					if(option <= 0 || option > 2)
+					{
+						throw new RuntimeException();
+					}
+					
+					input_fails = false;
+				}
+				catch(NumberFormatException ne)
+				{
+					System.out.println("Cannot parse and interger, enter a new option: ");
+				}
+				catch(RuntimeException re)
+				{
+					System.out.println("No such option, enter a new option: ");
+				}
+			}
+			
+			//send create lobby command
+			if(option == 1)
+			{
+				System.out.print("Enter a new lobby name: ");
+				String lobbyName = scanner.nextLine();
+				command = new CreateLobbyCommand(lobbyName);
+			}
+			//send join lobby command
+			else
+			{
+				System.out.print("Enter the lobby name to join: ");
+				String lobbyName = scanner.nextLine();
+				command = new JoinLobbyCommand(lobbyName);
+			}
+			
+		}
+		  else {
 			Log.println("Unknown command '" + cmd + "'");
 		}
 		
