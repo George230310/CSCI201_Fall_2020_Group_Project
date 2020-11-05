@@ -49,9 +49,11 @@ final class ClientManager implements Runnable {
 	private ArrayList<ClientReader> clientReaders;
 	protected boolean isTerminated = false;
 	private final FirebaseServer fb;
+	private int numClients;
 	
 	public ClientManager(FirebaseServer fb) {
 		this.fb = fb;
+		this.numClients = 0;
 		clientReaders = new ArrayList<ClientReader>();
 		try {
 			server = new ServerSocket(Server.port);
@@ -67,8 +69,7 @@ final class ClientManager implements Runnable {
 				Socket client = server.accept();
 				
 				// Clean up any clients that have been disconnected
-				// If last client '2' was disconnected the next client to connect
-				// will take the '2' client ID
+				// Clients all have unique numbers
 				List<ClientReader> found = new ArrayList<ClientReader>();
 				for (ClientReader clientReader : clientReaders) {
 					if (clientReader.isInterrupted()) {
@@ -78,8 +79,9 @@ final class ClientManager implements Runnable {
 				
 				clientReaders.removeAll(found);
 				
-				ClientReader r = new ClientReader(client, String.valueOf(clientReaders.size()), fb);
+				ClientReader r = new ClientReader(client, String.valueOf(numClients), fb);
 				clientReaders.add(r);
+				numClients++;
 			} catch (IOException e) {
 				Log.printServer("Problem accepting the incoming client socket. " + e.getMessage());
 			} catch (NullPointerException e) {
@@ -94,7 +96,7 @@ final class ClientManager implements Runnable {
 final class ClientReader extends Thread {
 
 	private final Socket socket;
-	private final String id;
+	private String id;
 	private ObjectOutputStream os;
 	private FirebaseServer fb;
 	
@@ -140,6 +142,7 @@ final class ClientReader extends Thread {
 	}
 	
 	public String getID() { return this.id; }
+	public void setID(String id) { this.id = id; }
 	
 }
     

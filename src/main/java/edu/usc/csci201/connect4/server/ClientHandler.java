@@ -18,6 +18,7 @@ public class ClientHandler {
 	public interface ClientCommand {
 		public String getResponse();
 		public void setResponse(String response);
+		public void setSuccessful();
 	}
 	
 	public static class RegisterCommand implements ClientCommand, Serializable {
@@ -75,6 +76,7 @@ public class ClientHandler {
 		
 		public void setResponse(String response) { this.response = response; }
 		public String getResponse() { return this.response; }
+		public void setSuccessful() {}
 	}
 	
 	public static class CreateLobbyCommand implements ClientCommand, Serializable {
@@ -128,6 +130,7 @@ public class ClientHandler {
 		public void setResponse(String response) { this.response = response; }
 		public String getResponse() { return this.response; }
 		public Boolean isPlayer1() { return this.player1; }
+		public void setSuccessful() {}
 	}
 	
 	public static class GameCommand implements ClientCommand, Serializable {
@@ -169,7 +172,9 @@ class ClientCompletionHandler implements LoginEventListener, RegisterEventListen
 	}
 	
 	public void onLogin(UserRecord user, Object sender) {
+		((ClientReader) sender).setID(user.getUid());
 		cmd.setResponse("Successfully logged in user with ID " + ((ClientReader) sender).getID() + " and UID " + user.getUid());
+		cmd.setSuccessful();
 		try {
 			os.writeObject(cmd);
 		} catch (IOException e) {
@@ -199,7 +204,9 @@ class ClientCompletionHandler implements LoginEventListener, RegisterEventListen
 	}
 	
 	public void onRegister(UserRecord user, Object sender) {
+		((ClientReader) sender).setID(user.getUid());
 		cmd.setResponse("Successfully registered user with id " + ((ClientReader) sender).getID() + " and UID " + user.getUid());
+		cmd.setSuccessful();
 		try {
 			os.writeObject(cmd);
 		} catch (IOException e) {
