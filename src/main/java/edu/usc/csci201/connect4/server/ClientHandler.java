@@ -18,7 +18,6 @@ public class ClientHandler {
 
 	
 	public interface ClientCommand {
-		public String getSender();
 		public String getResponse();
 		public void setResponse(String response);
 	}
@@ -30,7 +29,6 @@ public class ClientHandler {
 		private final String email;
 		private final String password;
 		private String response;
-		private String sender;
 		
 		public RegisterCommand(String email, String password) {
 			this.email = email;
@@ -38,9 +36,7 @@ public class ClientHandler {
 		}
 		
 		public void setResponse(String response) { this.response = response; }
-		public void setSender(String sender) { this.sender = sender; }
 		public String getResponse() { return this.response; }
-		public String getSender() { return this.sender; }
 		public String getEmail() { return this.email; }
 		public String getPassword() { return this.password; }
 	}
@@ -52,7 +48,6 @@ public class ClientHandler {
 		private final String email;
 		private final String password;
 		private String response;
-		private String sender;
 		
 		public LoginCommand(String email, String password) {
 			this.email = email;
@@ -60,9 +55,7 @@ public class ClientHandler {
 		}
 		
 		public void setResponse(String response) { this.response = response; }
-		public void setSender(String sender) { this.sender = sender; }
 		public String getResponse() { return this.response; }
-		public String getSender() { return this.sender; }
 		public String getEmail() { return this.email; }
 		public String getPassword() { return this.password; }
 	}
