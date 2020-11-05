@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import com.google.firebase.auth.ExportedUserRecord;
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.database.DatabaseReference;
 
-import edu.usc.csci201.connect4.server.AuthEventCallback.ListEventListener;
 import edu.usc.csci201.connect4.server.AuthEventCallback.LoginEventListener;
 import edu.usc.csci201.connect4.server.AuthEventCallback.RegisterEventListener;
 import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
@@ -160,7 +158,7 @@ public class ClientHandler {
 	}
 }
 
-class ClientCompletionHandler implements LoginEventListener, RegisterEventListener, ListEventListener {
+class ClientCompletionHandler implements LoginEventListener, RegisterEventListener {
 
 	final ObjectOutputStream os;
 	final ClientCommand cmd;
@@ -209,20 +207,6 @@ class ClientCompletionHandler implements LoginEventListener, RegisterEventListen
 		}
 		if (sender != null) { synchronized (sender) { sender.notify(); } }
 	}
-	
-	public void onList(ExportedUserRecord[] users, Object sender) {
-		Log.printServer("Successfully fetched all authenticated users. "); 
-		if (sender != null) {
-			synchronized (sender) { sender.notify(); }
-		}
-	} 
-	
-	public void onListFail(String err, Object sender) {
-		Log.printServer("Failed to login ... " + err);
-		if (sender != null) {
-			synchronized (sender) { sender.notify(); }
-		}
-	}
 
 }
 
@@ -240,11 +224,6 @@ class AuthEventCallback {
 		public void onRegister(UserRecord user, Object sender);
 		public void onRegisterFail(String err, Object sender);
 	} 
-	
-	public interface ListEventListener extends AuthEventListener {
-		public void onList(ExportedUserRecord[] users, Object sender);
-		public void onListFail(String err, Object sender);
-	}
 }
 
 class DatabaseEventCallback {
@@ -254,6 +233,8 @@ class DatabaseEventCallback {
 	public interface SetValueAsyncEventListener extends DatabaseEventListener { 
 		public void onSetValueAtPathAsync(DatabaseReference dbr);
 		public void onSetValueAtPathAsyncFail(DatabaseReference dbr, String error);
+		public void onGetValueAtPathAsync(DatabaseReference dbr);
+		public void onGetValueAtPathAsyncFail(DatabaseReference dbr, String error);
 	} 
 	
 }

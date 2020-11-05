@@ -1,9 +1,6 @@
 /**
 * FirebaseServer.java is the closest class that interfaces with
-* the FirebaseApp methods. All methods here are designed to throw
-* exceptions if need be and should not be interfaced directly unless
-* you are updating and/or implementing new methods in the Auth/Database.java
-* classes.
+* the FirebaseApp methods.
 * 
 * @author      Mario Figueroa
 * @version     %I%, %G%
@@ -31,7 +28,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import edu.usc.csci201.connect4.server.AuthEventCallback.ListEventListener;
 import edu.usc.csci201.connect4.server.AuthEventCallback.LoginEventListener;
 import edu.usc.csci201.connect4.server.AuthEventCallback.RegisterEventListener;
 import edu.usc.csci201.connect4.server.DatabaseEventCallback.SetValueAsyncEventListener;
@@ -124,29 +120,6 @@ public class FirebaseServer {
 			}
 			
 		}).start(); 
-	}
-	
-	public void listUsers(final ListEventListener listener, final Object sender) {
-		ExportedUserRecord[] users = null; 
-		Iterable<ExportedUserRecord> rawUsers = null;
-		String errorMessage = "";
-		
-		try {
-			rawUsers = listUsers();
-			for (ExportedUserRecord rawUser : rawUsers) {
-				Log.printServer(rawUser.getUid());
-			}
-		} catch (FirebaseAuthException e) {
-			errorMessage = e.getMessage();
-		} finally {
-			// Invoke the list callback of listener.onList or listener.onListFail
-			if (errorMessage.isBlank() && listener != null) listener.onList(users, sender);
-			else if (listener != null) listener.onListFail(errorMessage, sender);
-		}
-	}
-	
-	public void listUsers(final ListEventListener listener) {
-		listUsers(listener, null);
 	}
 	
 	public void setValueAtPathAsync(final String path, final Object value, final SetValueAsyncEventListener listener) {
