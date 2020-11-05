@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import com.google.api.client.http.MultipartContent.Part;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -24,9 +25,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.auth.UserRecord.CreateRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import edu.usc.csci201.connect4.server.AuthEventCallback.ListEventListener;
+import edu.usc.csci201.connect4.server.AuthEventCallback.LoginEventListener;
+import edu.usc.csci201.connect4.server.AuthEventCallback.RegisterEventListener;
+import edu.usc.csci201.connect4.server.DatabaseEventCallback.SetValueAsyncEventListener;
 import edu.usc.csci201.connect4.utils.Log;
 import edu.usc.csci201.connect4.utils.Utils;
 
@@ -58,7 +66,118 @@ public class FirebaseServer {
 		
 	}
 	
-	public DatabaseReference setDataAtPathAsync(String path, Object value) 
+	public void registerUser(final String email, final String password, final RegisterEventListener listener, final Object sender) {
+		
+		new Thread(new Runnable() { 
+			public void run() { 
+				
+				UserRecord user = null;
+				String errorMessage = "";
+				
+				// Attempt to register a user using the FirebaseServer class
+		        try {
+					user = registerUserWith(email, password);
+				} catch (FirebaseAuthException e) {
+					errorMessage = e.getMessage();
+				} catch (IllegalArgumentException e) {
+					errorMessage = e.getMessage();
+				} finally {
+					// Invoke the register callback of listener.onRegister or listener.onRegisterFail
+					if (errorMessage.isBlank() && listener != null) listener.onRegister(user, sender);
+					else if (listener != null) listener.onRegisterFail(errorMessage, sender);
+				}
+
+			}
+			
+		}).start(); 
+	}
+	
+	public void registerUser(final String email, final String password, final RegisterEventListener listener) {
+		registerUser(email, password, null);
+	}
+	
+	public void loginUser(final String email, final String password, final LoginEventListener listener) {
+		loginUser(email, password, listener, null);
+	}
+	
+	public void loginUser(final String email, final String password, final LoginEventListener listener, final Object sender) {
+		
+		new Thread(new Runnable() { 
+			public void run() { 
+				
+				UserRecord user = null;
+				String errorMessage = "";
+				
+				// Attempt to register a user using the FirebaseServer class
+		        try {
+					user = login(email, password);
+				} catch (FirebaseAuthException e) {
+					errorMessage = e.getMessage();
+				} catch (IllegalArgumentException e) {
+					errorMessage = e.getMessage();
+				} finally {
+					// Invoke the register callback of listener.onLogin or listener.onLoginFail
+					if (errorMessage.isBlank() && listener != null) listener.onLogin(user, sender);
+					else if (listener != null) listener.onLoginFail(errorMessage, sender);
+				}
+
+			}
+			
+		}).start(); 
+	}
+	
+	public void listUsers(final ListEventListener listener, final Object sender) {
+		ExportedUserRecord[] users = null; 
+		Iterable<ExportedUserRecord> rawUsers = null;
+		String errorMessage = "";
+		
+		try {
+			rawUsers = listUsers();
+			for (ExportedUserRecord rawUser : rawUsers) {
+				Log.printServer(rawUser.getUid());
+			}
+		} catch (FirebaseAuthException e) {
+			errorMessage = e.getMessage();
+		} finally {
+			// Invoke the list callback of listener.onList or listener.onListFail
+			if (errorMessage.isBlank() && listener != null) listener.onList(users, sender);
+			else if (listener != null) listener.onListFail(errorMessage, sender);
+		}
+	}
+	
+	public void listUsers(final ListEventListener listener) {
+		listUsers(listener, null);
+	}
+	
+	public void setValueAtPathAsync(final String path, final Object value, final SetValueAsyncEventListener listener) {
+		
+		new Thread(new Runnable() { 
+			public void run() { 
+				
+				DatabaseReference dbr = null;
+				String error = "";
+				
+				// Attempt to register a user using the FirebaseServer class
+		        try {
+					dbr = setDataAtPathAsync(path, value);
+				} catch (InterruptedException e) {
+					error = e.getMessage();
+				} catch (ExecutionException e) {
+					error = e.getMessage();
+				} finally {
+					// Invoke the register callback of this.databaseListener
+					if (error.isBlank() && listener != null) listener.onSetValueAtPathAsync(dbr);
+					else if (listener != null) listener.onSetValueAtPathAsyncFail(dbr, error);
+				}
+			}			
+		}).start(); 
+	}
+	
+	/*
+	 *  START OF PRIVATE RAW FIREBASE FUNCTIONS (Don't touch generally).
+	 */
+	
+	private DatabaseReference setDataAtPathAsync(String path, Object value) 
 			throws ExecutionException, InterruptedException {
 		
 		try {
@@ -73,7 +192,7 @@ public class FirebaseServer {
 		
 	}
 	
-	public UserRecord login(String email, String pass) 
+	private UserRecord login(String email, String pass) 
 			throws FirebaseAuthException, IllegalArgumentException {
 	
 		UserRecord potentialUser = firebaseAuth.getUserByEmail(email);
@@ -84,13 +203,15 @@ public class FirebaseServer {
 	
 	}
 	
-	public UserRecord registerUserWith(String email, String pass) 
+	private UserRecord registerUserWith(String email, String pass) 
 			throws FirebaseAuthException, IllegalArgumentException {
 		
 		// TODO: Check if email is a valid email and throw IllegalArgumentException
 		// or just let Firebase throw an invalid email exception which is also completely valid
 		
 		if (pass.length() < 6) throw new IllegalArgumentException("Password must be at least 6 characters long");
+		
+		
 		
 		CreateRequest request = new CreateRequest();
 		request.setEmail(email);
@@ -100,8 +221,27 @@ public class FirebaseServer {
 		return firebaseAuth.createUser(request);
 	}
 	
-	public Iterable<ExportedUserRecord> listUsers() throws FirebaseAuthException {
+	private Iterable<ExportedUserRecord> listUsers() throws FirebaseAuthException {
 		return firebaseAuth.listUsers(null, 100).iterateAll();
+	}
+	
+	@SuppressWarnings("unused")
+	private void listen() {
+		DatabaseReference ref = firebaseDatabase.getReference("lobbies/lobby1");
+		
+		ref.addValueEventListener(new ValueEventListener() {
+			
+			  public void onDataChange(DataSnapshot dataSnapshot) {
+			    Part post = dataSnapshot.getValue(Part.class);
+			    System.out.println(post);
+			  }
+
+			  public void onCancelled(DatabaseError databaseError) {
+			    System.out.println("The read failed: " + databaseError.getCode());
+			  }
+			});
 	}
 
 }
+
+
