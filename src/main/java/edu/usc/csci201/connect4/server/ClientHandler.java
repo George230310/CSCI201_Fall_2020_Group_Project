@@ -68,6 +68,17 @@ public class ClientHandler {
 		public Boolean isSuccessful() { return isSuccessful; }
 	}
 	
+	public static class GetHighScoresCommand implements ClientCommand, Serializable {
+
+		private static final long serialVersionUID = 2360988652046736774L;
+		private String response;
+		
+		public GetHighScoresCommand() {}
+		
+		public void setResponse(String response) { this.response = response; }
+		public String getResponse() { return this.response; }
+	}
+	
 	public static class CreateLobbyCommand implements ClientCommand, Serializable {
 
 		private static final long serialVersionUID = -1130979628160107144L;
@@ -85,17 +96,6 @@ public class ClientHandler {
 		public String getResponse() { return this.response; }
 		public String getLobby() { return this.lobbyName; }
 		public Boolean isSuccessful() { return isSuccessful; }
-	}
-	
-	public static class GetHighScoresCommand implements ClientCommand, Serializable {
-
-		private static final long serialVersionUID = 2360988652046736774L;
-		private String response;
-		
-		public GetHighScoresCommand() {}
-		
-		public void setResponse(String response) { this.response = response; }
-		public String getResponse() { return this.response; }
 	}
 	
 	public static class JoinLobbyCommand implements ClientCommand, Serializable {
