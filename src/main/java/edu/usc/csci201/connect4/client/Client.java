@@ -300,8 +300,8 @@ public class Client {
 		} else if(args[0].equals("guest")) {
 			//continue to interact as a guest
 			Log.printConsole("You will continue as guest:");
-			Log.printConsole("1)Create a new game");
-			Log.printConsole("2)Join an existing game");
+			Log.printConsole("1) Create a new game");
+			Log.printConsole("2) Join an existing game");
 			
 			//decide to create a new game or join an existing one
 			//also do error checking for input
