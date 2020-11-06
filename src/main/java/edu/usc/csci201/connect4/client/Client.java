@@ -23,6 +23,11 @@ public class Client {
 	private static Socket socket;
 	private static boolean isTerminated = false;
 	
+	private static void PlayGame(ObjectInputStream in, ObjectOutputStream out, Boolean isP1)
+	{
+		
+	}
+	
 	private final static HashMap<String, String[]> cmds = new HashMap<String, String[]>() {
 		private static final long serialVersionUID = 1L;
 	{
@@ -43,9 +48,8 @@ public class Client {
 			Log.printClient("Connected to Server on port " + Server.port);
 			
 			//more guidance on user interface
-			System.out.println("Enter 'help' for the list of avalaible commands");
-			System.out.println("Enter 'help command' for detailed instructions");
-			System.out.println("For example, 'help login'");
+			Log.printConsole("Enter 'help' for the list of avalaible commands");
+			Log.printConsole("Enter 'help command' for detailed instructions (e.g. help login)");
 			
 			os = new ObjectOutputStream(socket.getOutputStream());
 			is = new ObjectInputStream(socket.getInputStream());
@@ -81,13 +85,42 @@ public class Client {
 			{
 				if(((CreateLobbyCommand)rawCmd).isSuccessful())
 				{
-					System.out.println("Waiting for another player to join...");
+					//waiting for a signal to start the game
+					Log.printClient("Waiting for another player to join...");
+					ObjectInputStream gameIn = new ObjectInputStream(socket.getInputStream());
+					ObjectOutputStream gameOut = new ObjectOutputStream(socket.getOutputStream());
+					ClientCommand startSignal = (ClientCommand)gameIn.readObject();
+					
+					//all game logics go below
+					PlayGame(gameIn, gameOut, ((StartGameCommand)startSignal).isPlayer1());
+					
+					gameIn.close();
+					gameOut.close();
+				}
+			}
+			else if(rawCmd.getClass() == JoinLobbyCommand.class)
+			{
+				if(((JoinLobbyCommand)rawCmd).isSuccessful())
+				{
+					//inform the player the game shall start
+					Log.printClient("The game shall start in a moment...");
+					ObjectInputStream gameIn = new ObjectInputStream(socket.getInputStream());
+					ObjectOutputStream gameOut = new ObjectOutputStream(socket.getOutputStream());
+					ClientCommand startSignal = (ClientCommand)gameIn.readObject();
+					
+					
+					//all games logic go below
+					PlayGame(gameIn, gameOut, ((StartGameCommand)startSignal).isPlayer1());
+					
+					gameIn.close();
+					gameOut.close();
 				}
 			}
 			
 		} catch (ClassNotFoundException e) {
 			Log.printConsole("Failed to parse object from reading object stream. " + e.getMessage());
 		} catch (IOException e) {
+			e.printStackTrace();
 			Log.printConsole("Failed to read object from the connected socket. " + e.getMessage());
 		}
 
@@ -112,8 +145,9 @@ public class Client {
 			command = new LoginCommand(args[1], args[2]);
 		} else if(args[0].equals("guest")) {
 			//continue to interact as a guest
-			System.out.println("You will continue as guest:");
-			System.out.println("1)Create a new game\n2)Join an existing game");
+			Log.printConsole("You will continue as guest:");
+			System.out.println("1)Create a new game");
+			System.out.println("2)Join an existing game");
 			
 			//decide to create a new game or join an existing one
 			//also do error checking for input
@@ -135,25 +169,25 @@ public class Client {
 				}
 				catch(NumberFormatException ne)
 				{
-					System.out.println("Cannot parse and interger, enter a new option: ");
+					Log.printConsole("Cannot parse and interger, enter a new option: ");
 				}
 				catch(RuntimeException re)
 				{
-					System.out.println("No such option, enter a new option: ");
+					Log.printConsole("No such option, enter a new option: ");
 				}
 			}
 			
 			//send create lobby command
 			if(option == 1)
 			{
-				System.out.print("Enter a new lobby name: ");
+				Log.printConsole("Enter a new lobby name: ");
 				String lobbyName = scanner.nextLine();
 				command = new CreateLobbyCommand(lobbyName);
 			}
 			//send join lobby command
 			else
 			{
-				System.out.print("Enter the lobby name to join: ");
+				Log.printConsole("Enter the lobby name to join: ");
 				String lobbyName = scanner.nextLine();
 				command = new JoinLobbyCommand(lobbyName);
 			}
@@ -190,9 +224,9 @@ public class Client {
 		} else {
 			Log.println("**** Welcome to Connect4! ****\n");
 			for (String cmd : cmds.keySet()) {
-				Log.print(cmd + ", ");
+				Log.println(cmd);
 			}
-			Log.println("\n****** * * **** * *  *******");
+			Log.println("\n****** * * **** * *  *********");
 		}
 	} 
 }

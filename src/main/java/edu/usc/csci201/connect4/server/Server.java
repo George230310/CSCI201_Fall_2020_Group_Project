@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
 import edu.usc.csci201.connect4.server.ClientHandler.LoginCommand;
@@ -106,11 +109,38 @@ final class ClientReader extends Thread {
 	private ObjectOutputStream os;
 	private FirebaseServer fb;
 	
+	//string to store email (username) for later usage
+	private String email = null;
+	
+	//lock to freeze client reader until game is done
+	private Lock lock = new ReentrantLock();
+	private Condition gameFinished = lock.newCondition();
+	
 	public ClientReader(Socket socket, String id, FirebaseServer fb) {
 		this.socket = socket;
 		this.fb = fb;
 		this.id = id;
 		this.start();
+	}
+	
+	//signal client reader to resume working
+	public void signalGameFinished()
+	{
+		lock.lock();
+		try
+		{
+			gameFinished.signal();
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
+	//getter for (player)socket
+	public Socket getPlayerSocket()
+	{
+		return socket;
 	}
 	
 	public void run() {
@@ -151,7 +181,7 @@ final class ClientReader extends Thread {
 			try
 			{
 				//if lobby name already exists
-				if(Server.gameUniverse.contains(name_input))
+				if(Server.gameUniverse.containsKey(name_input))
 				{
 					((CreateLobbyCommand)rawCommand).setResponse("The lobby name already exists");
 					os.writeObject(rawCommand);
@@ -163,9 +193,80 @@ final class ClientReader extends Thread {
 					clients.add(this);
 					Server.gameUniverse.put(name_input, clients);
 					
-					((CreateLobbyCommand)rawCommand).setResponse("Successfully create the lobby named " + name_input);
+					((CreateLobbyCommand)rawCommand).setResponse("Successfully created the lobby named " + name_input);
 					((CreateLobbyCommand)rawCommand).setSuccessful();
 					os.writeObject(rawCommand);
+					
+					//freeze the client reader for its client during a game session
+					lock.lock();
+					try
+					{
+						gameFinished.await();
+					}
+					catch(InterruptedException ie)
+					{
+						ie.printStackTrace();
+					}
+					finally
+					{
+						lock.unlock();
+					}
+				}
+			}
+			catch(IOException ie)
+			{
+				Log.printServer("File I/O error");
+			}
+		} else if(rawCommand.getClass() == JoinLobbyCommand.class) {
+			//search the lobby name
+			String name_input = ((JoinLobbyCommand)rawCommand).getLobby();
+			
+			try
+			{
+				//if lobby name doesn't exist at all
+				if(!Server.gameUniverse.containsKey(name_input))
+				{
+					((JoinLobbyCommand)rawCommand).setResponse("No such lobby exists");
+					os.writeObject(rawCommand);
+				}
+				//if the lobby is already full
+				else if(Server.gameUniverse.get(name_input).size() >= 2)
+				{
+					((JoinLobbyCommand)rawCommand).setResponse("This lobby is already full");
+					os.writeObject(rawCommand);
+				}
+				//found the lobby and join the game!
+				else
+				{
+					//send successful join game message to player
+					Server.gameUniverse.get(name_input).add(this);
+					((JoinLobbyCommand)rawCommand).setResponse("Successfully joined the lobby named " + name_input);
+					((JoinLobbyCommand)rawCommand).setSuccessful();
+					os.writeObject(rawCommand);
+					
+					String player1Name = Server.gameUniverse.get(name_input).get(0).email;
+					String player2Name = email;
+					
+					//create the game session
+					new Thread(new HandleGameSession
+							(Server.gameUniverse.get(name_input).get(0).getPlayerSocket(), 
+									getPlayerSocket(), name_input, player1Name, player2Name,
+									Server.gameUniverse.get(name_input).get(0), this) ).start();
+					
+					//freeze the client reader for its client during a game session
+					lock.lock();
+					try
+					{
+						gameFinished.await();
+					}
+					catch(InterruptedException ie)
+					{
+						ie.printStackTrace();
+					}
+					finally
+					{
+						lock.unlock();
+					}
 				}
 			}
 			catch(IOException ie)
