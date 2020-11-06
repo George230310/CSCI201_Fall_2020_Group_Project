@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.*;
 import edu.usc.csci201.connect4.board.Board;
+import edu.usc.csci201.connect4.server.ClientHandler.*;
+import edu.usc.csci201.connect4.utils.Log;
 
 public class HandleGameSession implements Runnable{
 	
@@ -16,7 +18,7 @@ public class HandleGameSession implements Runnable{
 	private ClientReader p1Reader;
 	private ClientReader p2Reader;
 	
-	//TODO: add more member fields for reading and writing from players
+	//read and write from players
 	private ObjectOutputStream toPlayer1;
 	private ObjectInputStream fromPlayer1;
 	
@@ -26,7 +28,7 @@ public class HandleGameSession implements Runnable{
 	private Board serverBoard = new Board();
 	
 	//store the game result
-	private boolean player1Wins = false;
+	private Boolean player1Wins = null;
 	
 	public HandleGameSession(Socket p1, Socket p2, String gName, String p1N, String p2N, ClientReader p1R, ClientReader p2R)
 	{
@@ -49,82 +51,109 @@ public class HandleGameSession implements Runnable{
 			fromPlayer2 = new ObjectInputStream(player2.getInputStream());
 			
 			//signal the start of the game
-			toPlayer1.writeObject(new ClientHandler.StartGameCommand(true));
-			toPlayer2.writeObject(new ClientHandler.StartGameCommand(false));
+			StartGameCommand p1StartGame = new StartGameCommand(true);
+			p1StartGame.setResponse("You start the game as player 1");
+			toPlayer1.writeObject(p1StartGame);
+			StartGameCommand p2StartGame = new StartGameCommand(false);
+			p2StartGame.setResponse("You start the game as player 2");
+			toPlayer2.writeObject(p2StartGame);
 			
-			toPlayer1.close();
-			fromPlayer1.close();
-			toPlayer2.close();
-			fromPlayer2.close();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		
-		//establish all player connections
-		/*try
-		{
-			toPlayer1 = new PrintWriter(player1.getOutputStream(), true);
-			fromPlayer1 = new BufferedReader(new InputStreamReader(player1.getInputStream()));
-			
-			toPlayer2 = new PrintWriter(player2.getOutputStream(), true);
-			fromPlayer2 = new BufferedReader(new InputStreamReader(player2.getInputStream()));
-			
-			//host game
-			boolean continuePlay = true;
-			while(continuePlay)
+			//game logic here
+			while(true)
 			{
-				//receive input from player1
-				int player1Col = 0;
-				player1Col = Integer.parseInt(fromPlayer1.readLine());
+				//receive input from player 1
+				GameCommand p1GameMove = (GameCommand)fromPlayer1.readObject();
+				int p1Col = ((GameCommand)p1GameMove).getMove();
+				serverBoard.placePiece(p1Col, true);
 				
-				//update board on server
-				serverBoard.placePiece(player1Col, true);
+				p1GameMove.setResponseCol(p1Col);
+				p1GameMove.setResponse("Player 1 places a piece on column " + p1Col);
+				p1GameMove.setSuccessful();
+				
+				//decide winning
+				if(p1Col == 7)
+				{
+					p1GameMove.setGameOver(true);
+					player1Wins = true;
+				}
+				
+				if(serverBoard.isFull())
+				{
+					p1GameMove.setGameOver(null);
+				}
+				
+				//inform player1 of result
+				toPlayer1.writeObject(p1GameMove);
 				//update player2's board
-				toPlayer2.println(player1Col);
+				toPlayer2.writeObject(p1GameMove);
+				//break out if player 1 wins / board is full
+				if(p1GameMove.isGameOver())
+				{
+					break;
+				}
 				
-				//TODO: decide whether player1 wins
+				//receive input from player 2
+				GameCommand p2GameMove = (GameCommand)fromPlayer2.readObject();
+				int p2Col = ((GameCommand)p2GameMove).getMove();
+				serverBoard.placePiece(p2Col, false);
 				
+				p2GameMove.setResponseCol(p2Col);
+				p2GameMove.setResponse("Player 2 places a piece on column " + p2Col);
+				p2GameMove.setSuccessful();
 				
-				//TODO: if player1 wins, end loop and signal both players to end game
+				//decide winning
+				if(p2Col == 7)
+				{
+					p2GameMove.setGameOver(false);
+					player1Wins = false;
+					
+				}
 				
+				if(serverBoard.isFull())
+				{
+					p2GameMove.setGameOver(null);
+				}
 				
-				//if player1 doesn't win, player2 continues
-				int player2Col = 0;
-				player2Col = Integer.parseInt(fromPlayer2.readLine());
-				
-				//update board on server
-				serverBoard.placePiece(player2Col, false);
-				//update player2's board
-				toPlayer1.println(player2Col);
-				
-				//TODO: decide whether player2 wins
-				
-				
-				//TODO: if player2 wins, end loop and signal both players to end game
-				
-				
-				
+				//inform player2 of result
+				toPlayer2.writeObject(p2GameMove);
+				//update player1's board
+				toPlayer1.writeObject(p2GameMove);
+				//break out if player 2 wins / board is full
+				if(p2GameMove.isGameOver())
+				{
+					break;
+				}
 			}
 			
-			//TODO: broadcast the game result
-			
-			
-			//TODO: save the game result to the database
-			
-			
+			if(player1Wins == null)
+			{
+				//nobody wins
+			}
+			else if(player1Wins && player1Name != null)
+			{
+				//save player1 score to database
+				Log.printServer("Saving " + player1Name + "'s scores to database");
+				
+				//save
+			}
+			else if(player2Name != null)
+			{
+				//save player2 score to database
+				Log.printServer("Saving " + player2Name + "'s scores to database");
+				
+				//save
+			}
 		}
-		catch(SocketException se)
+		catch(ClassNotFoundException ce)
 		{
-			System.out.println("Connection reset");
+			ce.printStackTrace();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
-		}*/
+		}
 		
+		Server.gameUniverse.remove(myGameName);
 		p1Reader.signalGameFinished();
 		p2Reader.signalGameFinished();
 	}

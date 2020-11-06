@@ -8,6 +8,7 @@ public class Board {
 		
 	}
 	
+	//print board
 	public void printBoard()
 	{
 		for(int i = 0; i < 6; i++)
@@ -32,6 +33,24 @@ public class Board {
 		}
 	}
 	
+	//board is full
+	public boolean isFull()
+	{
+		for(int i = 0; i < 6; i++)
+		{
+			for(int j = 0; j < 7; j++)
+			{
+				if(board[i][j] == 0)
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	//place piece
 	public void placePiece(int col, boolean isP1)
 	{
 		for(int i = 5; i >= 0; i--)
