@@ -150,7 +150,7 @@ public class Client {
 			}
 			catch(ClassNotFoundException ce)
 			{
-				ce.printStackTrace();
+				Log.printConsole(ce.getMessage());
 			}
 			catch(IOException ie)
 			{
