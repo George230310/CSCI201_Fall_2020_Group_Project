@@ -167,7 +167,7 @@ public class Client {
 		else if(p1Wins && isP1)
 		{
 			//player 1 wins
-			Log.printConsole("You win! Your score has been saved");
+			Log.printConsole("You win!");
 		}
 		else if(p1Wins && !isP1)
 		{
@@ -177,7 +177,7 @@ public class Client {
 		else if(!p1Wins && !isP1)
 		{
 			//player 2 wins
-			Log.printConsole("You win! Your score has been saved");
+			Log.printConsole("You win!");
 		}
 		else
 		{
