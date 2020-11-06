@@ -9,9 +9,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import edu.usc.csci201.connect4.server.Server;
-import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
-import edu.usc.csci201.connect4.server.ClientHandler.LoginCommand;
-import edu.usc.csci201.connect4.server.ClientHandler.RegisterCommand;
+import edu.usc.csci201.connect4.server.ClientHandler.*;
 import edu.usc.csci201.connect4.utils.Log;
 
 public class Client {
@@ -51,7 +49,41 @@ public class Client {
 		}
 
 		while (!isTerminated) {
-			if (handleCommand(syncPrompt("> "))) handleResponse();
+			try {
+			int num = scanner.nextInt();
+			switch(num) {
+			case 1:
+				os.writeObject(new GetHighScoresCommand());
+				break;
+			case 2:
+				os.writeObject(new CreateLobbyCommand("Testing"));
+				break;
+			case 3:
+				os.writeObject(new JoinLobbyCommand("Testing"));
+				break;
+			case 4:
+				os.writeObject(new LoginCommand("liuraymo@usc.edu", "password"));
+			case 5:
+				
+			case 6:
+			}
+			} catch (IOException e) {
+				System.out.println(e.getMessage());
+			}
+			try {
+				ClientCommand rawCmd = (ClientCommand)is.readObject();
+				System.out.println("Caught a command");
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+			//if (handleCommand(syncPrompt("> "))) handleResponse();
 		}
 		
 		Log.println("Thanks for playing!");

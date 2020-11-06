@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
-import edu.usc.csci201.connect4.server.ClientHandler.LoginCommand;
-import edu.usc.csci201.connect4.server.ClientHandler.RegisterCommand;
+import edu.usc.csci201.connect4.server.ClientHandler.*;
 import edu.usc.csci201.connect4.utils.Log;
 
 public class Server {
@@ -138,11 +136,52 @@ final class ClientReader extends Thread {
 			fb.registerUser(((RegisterCommand) rawCommand).getEmail(), ((RegisterCommand) rawCommand).getPassword(), handler, this);
 		} else if (rawCommand.getClass() == LoginCommand.class) {
 			fb.loginUser(((LoginCommand) rawCommand).getEmail(), ((LoginCommand) rawCommand).getPassword(), handler, this);
+		} else if (rawCommand.getClass() == GetHighScoresCommand.class) {
+			//Not sure how to implement
+		} else if (rawCommand.getClass() == CreateLobbyCommand.class) {
+			//Create a Lobby
+			CreateLobbyCommand command = (CreateLobbyCommand) rawCommand;
+			try {
+				GameUniverse.makeNewGame(command.getLobby(), this);
+				command.setSuccessful();
+				command.setResponse("Successful created and joined " + command.getLobby());
+			}
+			catch(IOException e) {
+				Log.printServer("Client " + this.id + " failed to create lobby because " + e.getMessage());
+				command.setResponse(e.getMessage());
+			}
+			try {
+				os.writeObject(rawCommand);
+			}
+			catch (IOException e) {
+				Log.printServer("Failed to write create lobby response to client with ID " + this.id);
+			}
+		} else if (rawCommand.getClass() == JoinLobbyCommand.class) {
+			//Join a lobby
+			JoinLobbyCommand command = (JoinLobbyCommand) rawCommand;
+			try {
+				GameUniverse.joinGame(command.getLobby(), this);
+				command.setSuccessful();
+				command.setResponse("Successful joined " + command.getLobby());
+			}
+			catch(IOException e) {
+				Log.printServer("Client " + this.id + " failed to join lobby because " + e.getMessage());
+				command.setResponse(e.getMessage());
+			}
+			try {
+				os.writeObject(rawCommand);
+			}
+			catch (IOException e) {
+				Log.printServer("Failed to write create lobby response to client with ID " + this.id);
+			}
 		}
+		//Do not process Game Move
 	}
 	
 	public String getID() { return this.id; }
 	public void setID(String id) { this.id = id; }
+	
+	public Socket getSocket() { return this.socket; }
 	
 }
     
