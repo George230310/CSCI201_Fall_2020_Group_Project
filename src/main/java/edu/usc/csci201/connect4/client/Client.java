@@ -24,7 +24,7 @@ public class Client {
 	private static Socket socket;
 	private static boolean isTerminated = false;
 	
-	//This function talks to HandleGameSession class
+	//talks to HandleGameSession
 	private static void PlayGame(ObjectInputStream in, ObjectOutputStream out, Boolean isP1)
 	{
 		Board playerBoard = new Board();
