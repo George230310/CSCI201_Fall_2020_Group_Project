@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import edu.usc.csci201.connect4.server.ClientHandler.*;
 import edu.usc.csci201.connect4.utils.Log;
@@ -98,11 +101,29 @@ final class ClientReader extends Thread {
 	private ObjectOutputStream os;
 	private FirebaseServer fb;
 	
+	//lock to freeze client reader until game is done
+	private Lock lock = new ReentrantLock();
+	private Condition gameFinished = lock.newCondition();
+	
 	public ClientReader(Socket socket, String id, FirebaseServer fb) {
 		this.socket = socket;
 		this.fb = fb;
 		this.id = id;
 		this.start();
+	}
+	
+	//signal client reader to resume working
+	public void signalGameFinished()
+	{
+		lock.lock();
+		try
+		{
+			gameFinished.signal();
+		}
+		finally
+		{
+			lock.unlock();
+		}
 	}
 	
 	public void run() {
@@ -152,6 +173,25 @@ final class ClientReader extends Thread {
 			}
 			try {
 				os.writeObject(rawCommand);
+				
+				//freeze the client reader for its client during a game session
+				
+				if(((CreateLobbyCommand)rawCommand).isSuccessful())
+				{
+					lock.lock();
+					try
+					{
+						gameFinished.await();
+					}
+					catch(InterruptedException ie)
+					{
+						ie.printStackTrace();
+					}
+					finally
+					{
+						lock.unlock();
+					}
+				}
 			}
 			catch (IOException e) {
 				Log.printServer("Failed to write create lobby response to client with ID " + this.id);
@@ -163,6 +203,7 @@ final class ClientReader extends Thread {
 				GameUniverse.joinGame(command.getLobby(), this);
 				command.setSuccessful();
 				command.setResponse("Successful joined " + command.getLobby());
+				
 			}
 			catch(IOException e) {
 				Log.printServer("Client " + this.id + " failed to join lobby because " + e.getMessage());
@@ -170,6 +211,26 @@ final class ClientReader extends Thread {
 			}
 			try {
 				os.writeObject(rawCommand);
+				
+				if(((JoinLobbyCommand)rawCommand).isSuccessful())
+				{
+					//start the game when second player joined successfully
+					GameUniverse.startGame(command.getLobby());
+					
+					lock.lock();
+					try
+					{
+						gameFinished.await();
+					}
+					catch(InterruptedException ie)
+					{
+						ie.printStackTrace();
+					}
+					finally
+					{
+						lock.unlock();
+					}
+				}
 			}
 			catch (IOException e) {
 				Log.printServer("Failed to write create lobby response to client with ID " + this.id);

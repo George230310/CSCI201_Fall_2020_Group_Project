@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import edu.usc.csci201.connect4.utils.Log;
 import edu.usc.csci201.connect4.utils.TimeStamp;
-import edu.usc.csci201.connect4.utils.Utils;
 
 public class GameUniverse {
 	
@@ -62,12 +61,26 @@ public class GameUniverse {
 		//register me to the game list
 		GameUniverse.nameToServerThreads.get(gameName).add(player);
 		Log.printServer(TimeStamp.getTimestamp() + " Player " + player.getID() + " has joined " + gameName);
-		
-		
+	}
+	
+	//this function starts the game session
+	public static void startGame(String gameName)
+	{
 		//start the game session
-		Socket player1 = GameUniverse.nameToServerThreads.get(gameName).get(0).getSocket();
-		new Thread(new HandleGameSession(player1, player.getSocket(), gameName)).start();
-		System.out.println(TimeStamp.getTimestamp() + " " + gameName + " has been started");
-
+				Socket player1 = GameUniverse.nameToServerThreads.get(gameName).get(0).getSocket();
+				Socket player2 = GameUniverse.nameToServerThreads.get(gameName).get(1).getSocket();
+				ClientReader player1Reader = GameUniverse.nameToServerThreads.get(gameName).get(0);
+				ClientReader player2Reader = GameUniverse.nameToServerThreads.get(gameName).get(1);
+				String player1Name = GameUniverse.nameToServerThreads.get(gameName).get(0).getID();
+				String player2Name = GameUniverse.nameToServerThreads.get(gameName).get(1).getID();
+				new Thread(new HandleGameSession
+						(player1, player2, gameName, player1Name, player2Name, player1Reader, player2Reader)).start();
+				System.out.println(TimeStamp.getTimestamp() + " " + gameName + " has been started");
+	}
+	
+	//removes a game from game universe
+	public static void removeGame(String gameName)
+	{
+		nameToServerThreads.remove(gameName);
 	}
 }
