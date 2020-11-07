@@ -70,4 +70,96 @@ public class Board {
 			}
 		}
 	}
+	
+	public int isGameOver() {
+		int count = 0;
+		int row = 6;
+		int col = 7;
+		
+		for(int i = 0; i < col; i++) {
+			int piece = 2;
+			for(int j = 0; j < row; j++) {
+				if(piece == board[i][j]) {
+					count++;
+				}
+				else {
+					count = 0;
+				}
+				
+				if(count >= 4) {
+					return piece;
+				}
+				piece = board[j][i];
+			}
+			
+		}
+		
+		for(int i = 0; i < row; i++) {
+			int piece = 2;
+			for(int j = 0; j < col; j++) {
+				if(piece == board[i][j]) {
+					count++;
+				}
+				else {
+					count = 0;
+				}
+				
+				if(count >= 4) {
+					return piece;
+				}
+				piece = board[j][i];
+			}
+			
+		}
+		
+		for(int i = 0; i < row; i++) {
+			int piece = 2;
+			for(int j = 0; j < col; j++) {
+				if(board[i][j] != 0) {
+					piece = board[i][j];
+					
+					if(board[i+1][j+1] == piece) {
+						int currRow = i;
+						int currCol = j;
+						
+						while(board[++currRow][++currCol] == piece) {
+							count++;
+						}
+						
+						currRow = i;
+						currCol = j;
+						
+						while(board[--currRow][--currCol] == piece) {
+							count++;
+						}
+						
+						if(count >= 4) {
+							return piece;
+						}
+					}
+					
+					if(board[i+1][j-1] == piece) {
+						int currRow = i;
+						int currCol = j;
+						
+						while(board[++currRow][--currCol] == piece) {
+							count++;
+						}
+						
+						currRow = i;
+						currCol = j;
+						
+						while(board[--currRow][++currCol] == piece) {
+							count++;
+						}
+						
+						if(count >= 4) {
+							return piece;
+						}
+					}
+				}
+			}
+		}
+		
+	}
 }
