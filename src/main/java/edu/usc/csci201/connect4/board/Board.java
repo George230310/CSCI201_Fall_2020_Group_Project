@@ -136,6 +136,9 @@ public class Board {
 						if(count >= 4) {
 							return piece;
 						}
+						else {
+							count = 0;
+						}
 					}
 					
 					if(board[i+1][j-1] == piece) {
@@ -156,10 +159,13 @@ public class Board {
 						if(count >= 4) {
 							return piece;
 						}
+						else {
+							count = 0;
+						}
 					}
 				}
 			}
 		}
-		
+		return 0;
 	}
 }
