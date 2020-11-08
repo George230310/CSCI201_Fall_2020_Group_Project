@@ -71,6 +71,18 @@ public class Board {
 		}
 	}
 	
+	public boolean isValidMove(int col) {
+		if(col > 6) {
+			return false;
+		}
+		
+		if(board[0][col] != 0) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public int isGameOver() {
 		int count = 0;
 		int row = 6;
