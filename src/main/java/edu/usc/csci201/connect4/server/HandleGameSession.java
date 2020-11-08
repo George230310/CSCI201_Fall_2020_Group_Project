@@ -44,6 +44,7 @@ public class HandleGameSession implements Runnable{
 	{
 		try
 		{
+			//set up all communications to both players
 			toPlayer1 = new ObjectOutputStream(player1.getOutputStream());
 			toPlayer2 = new ObjectOutputStream(player2.getOutputStream());
 			fromPlayer1 = new ObjectInputStream(player1.getInputStream());
@@ -51,10 +52,10 @@ public class HandleGameSession implements Runnable{
 			
 			//signal the start of the game
 			StartGameCommand p1StartGame = new StartGameCommand(true);
-			p1StartGame.setResponse("You start the game as player 1");
+			p1StartGame.setResponse("You start the game as player 1 with 'o'");
 			toPlayer1.writeObject(p1StartGame);
 			StartGameCommand p2StartGame = new StartGameCommand(false);
-			p2StartGame.setResponse("You start the game as player 2");
+			p2StartGame.setResponse("You start the game as player 2 with 'x'");
 			toPlayer2.writeObject(p2StartGame);
 			
 			//game logic here
@@ -70,12 +71,14 @@ public class HandleGameSession implements Runnable{
 				p1GameMove.setSuccessful();
 				
 				//decide winning
-				if(p1Col == 7)
+				int winner = serverBoard.isGameOver(p1Col - 1);
+				if(winner == 1)
 				{
 					p1GameMove.setGameOver(true);
 					player1Wins = true;
 				}
 				
+				//check if the board is full
 				if(serverBoard.isFull())
 				{
 					p1GameMove.setGameOver(null);
@@ -101,13 +104,15 @@ public class HandleGameSession implements Runnable{
 				p2GameMove.setSuccessful();
 				
 				//decide winning
-				if(p2Col == 7)
+				int winner2 = serverBoard.isGameOver(p2Col - 1);
+				if(winner2 == -1)
 				{
 					p2GameMove.setGameOver(false);
 					player1Wins = false;
 					
 				}
 				
+				//check if the board is full
 				if(serverBoard.isFull())
 				{
 					p2GameMove.setGameOver(null);
@@ -124,17 +129,18 @@ public class HandleGameSession implements Runnable{
 				}
 			}
 			
+			//SAVE RECORDS TO DATABASE
 			if(player1Wins == null)
 			{
 				//TODO: nobody wins
 			}
-			else if(player1Wins && player1Name != null)
+			else if(player1Wins.booleanValue() && player1Name != null)
 			{
 				//TODO: save player1 score to database
 				
 				
 			}
-			else if(player2Name != null)
+			else if(!player1Wins.booleanValue() && player2Name != null)
 			{
 				//TODO: save player2 score to database
 				

@@ -42,20 +42,27 @@ public class Client
 						boolean input_fails = true;
 						int myMove = 0;
 						Log.printConsole("It is your turn now, enter an integer for column: ");
+						
+						//validate move
 						while(input_fails)
 						{
 							try
 							{
 								myMove = Integer.parseInt(scanner.nextLine());
+								playerBoard.placePiece(myMove, true);
+								
 								input_fails = false;
 							}
 							catch(NumberFormatException e)
 							{
 								Log.printConsole("Please enter an integer: ");
 							}
+							catch(RuntimeException e)
+							{
+								Log.printConsole("This is illegal move, please enter a valid move: ");
+							}
 						}
 						
-						playerBoard.placePiece(myMove, true);
 						
 						//print board state after my move
 						playerBoard.printBoard();
@@ -68,7 +75,7 @@ public class Client
 						
 						//read server response
 						GameCommand p1Response = (GameCommand)in.readObject();
-						if(p1Response.isGameOver())
+						if(p1Response.isGameOver().booleanValue())
 						{
 							p1Wins = p1Response.isPlayer1Win();
 							break;
@@ -85,7 +92,7 @@ public class Client
 						playerBoard.printBoard();
 						Log.printConsole(p2GameMove.getResponse());
 						
-						if(p2GameMove.isGameOver())
+						if(p2GameMove.isGameOver().booleanValue())
 						{
 							p1Wins = p2GameMove.isPlayer1Win();
 							break;
@@ -104,7 +111,7 @@ public class Client
 						playerBoard.printBoard();
 						Log.printConsole(p1GameMove.getResponse());
 						
-						if(p1GameMove.isGameOver())
+						if(p1GameMove.isGameOver().booleanValue())
 						{
 							p1Wins = p1GameMove.isPlayer1Win();
 							break;
@@ -119,15 +126,18 @@ public class Client
 							try
 							{
 								myMove = Integer.parseInt(scanner.nextLine());
+								playerBoard.placePiece(myMove, false);
 								input_fails = false;
 							}
 							catch(NumberFormatException e)
 							{
 								Log.printConsole("Please enter an integer: ");
 							}
+							catch(RuntimeException re)
+							{
+								Log.printConsole("This is illegal move, please enter a valid move: ");
+							}
 						}
-						
-						playerBoard.placePiece(myMove, false);
 						
 						//print board state after my move
 						playerBoard.printBoard();
@@ -140,7 +150,7 @@ public class Client
 						
 						//read server response
 						GameCommand p2Response = (GameCommand)in.readObject();
-						if(p2Response.isGameOver())
+						if(p2Response.isGameOver().booleanValue())
 						{
 							p1Wins = p2Response.isPlayer1Win();
 							break;
@@ -163,17 +173,17 @@ public class Client
 				//tie
 				Log.printConsole("Tie");
 			}
-			else if(p1Wins && isP1)
+			else if(p1Wins.booleanValue() && isP1)
 			{
 				//player 1 wins
 				Log.printConsole("You win!");
 			}
-			else if(p1Wins && !isP1)
+			else if(p1Wins.booleanValue() && !isP1)
 			{
 				//player 1 loses
 				Log.printConsole("You lose. Maybe try another round?");
 			}
-			else if(!p1Wins && !isP1)
+			else if(!p1Wins.booleanValue() && !isP1)
 			{
 				//player 2 wins
 				Log.printConsole("You win!");

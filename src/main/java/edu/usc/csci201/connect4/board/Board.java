@@ -50,29 +50,37 @@ public class Board {
 		return true;
 	}
 	
-	//place piece
-	public void placePiece(int col, boolean isP1)
+	//place piece !Note: col here starts from 1!!!
+	public void placePiece(int col, boolean isP1) throws RuntimeException
 	{
-		for(int i = 5; i >= 0; i--)
+		//check for valid move and place piece
+		if(isValidMove(col - 1))
 		{
-			if(board[i][col - 1] == 0)
+			for(int i = 5; i >= 0; i--)
 			{
-				if(isP1)
+				if(board[i][col - 1] == 0)
 				{
-					board[i][col - 1] = 1;
+					if(isP1)
+					{
+						board[i][col - 1] = 1;
+					}
+					else
+					{
+						board[i][col - 1] = -1;
+					}
+					
+					return;
 				}
-				else
-				{
-					board[i][col - 1] = -1;
-				}
-				
-				return;
 			}
+		}
+		else
+		{
+			throw new RuntimeException();
 		}
 	}
 	
 	public boolean isValidMove(int col) {
-		if(col > 6) {
+		if(col > 6 || col < 0) {
 			return false;
 		}
 		
