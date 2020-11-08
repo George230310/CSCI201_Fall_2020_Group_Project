@@ -83,12 +83,104 @@ public class Board {
 		return true;
 	}
 	
-	public int isGameOver() {
+	public int isGameOver(int playerMove) {
 		int count = 0;
 		int row = 6;
 		int col = 7;
 		
-		for(int i = 0; i < col; i++) {
+		int x = 0;
+		while(board[x][playerMove] == 0) {
+			x++;
+		}
+		
+		int player = board[x][playerMove];
+		
+		int tempRow = x;
+		int tempCol = playerMove;
+		
+		//vertical win check
+		if(board[tempRow+1][tempCol] == player || board[tempRow-1][tempCol] == player) {
+			while(board[++tempRow][tempCol] == player) {
+				count++;
+			}
+			tempRow = x;
+			while(board[--tempRow][tempCol] == player) {
+				count++;
+			}
+			
+			if(count >= 4) {
+				return player;
+			}
+			else {
+				count = 0;
+			}
+		}
+		
+		tempRow = x;
+		tempCol = playerMove;
+		//horizontal win check
+		if(board[tempRow][tempCol+1] == player || board[tempRow][tempCol-1] == player) {
+			while(board[tempRow][++tempCol] == player) {
+				count++;
+			}
+			tempCol = playerMove;
+			while(board[x][--tempCol] == player) {
+				count++;
+			}
+			
+			if(count >= 4) {
+				return player;
+			}
+			else {
+				count = 0;
+			}
+		}
+		
+		tempRow = x;
+		tempCol = playerMove;
+		//diagonal win check
+		if(board[tempRow+1][tempCol+1] == player || board[tempRow-1][tempCol-1] == player) {
+			while(board[++tempRow][++tempCol] == player) {
+				count++;
+			}
+			tempRow = x;
+			tempCol = playerMove;
+			while(board[--tempRow][--tempCol] == player) {
+				count++;
+			}
+			
+			if(count >= 4) {
+				return player;
+			}
+			else {
+				count = 0;
+			}
+		}
+		
+		tempRow = x;
+		tempCol = playerMove;
+		//diagonal win check 2
+		if(board[tempRow+1][tempCol-1] == player || board[tempRow+1][tempCol-1] == player) {
+			while(board[++tempRow][--tempCol] == player) {
+				count++;
+			}
+			tempRow = x;
+			tempCol = playerMove;
+			while(board[--tempRow][++tempCol] == player) {
+				count++;
+			}
+			
+			if(count >= 4) {
+				return player;
+			}
+			else {
+				count = 0;
+			}
+		}
+		
+		
+		
+		/*for(int i = 0; i < col; i++) {
 			int piece = 2;
 			for(int j = 0; j < row; j++) {
 				if(piece == board[i][j]) {
@@ -177,7 +269,7 @@ public class Board {
 					}
 				}
 			}
-		}
+		}*/
 		return 0;
 	}
 }
