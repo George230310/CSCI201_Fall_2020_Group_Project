@@ -71,7 +71,7 @@ public class HandleGameSession implements Runnable{
 				p1GameMove.setSuccessful();
 				
 				//decide winning
-				int winner = serverBoard.isGameOver(p1Col - 1);
+				int winner = serverBoard.isGameOver();
 				if(winner == 1)
 				{
 					p1GameMove.setGameOver(true);
@@ -104,8 +104,8 @@ public class HandleGameSession implements Runnable{
 				p2GameMove.setSuccessful();
 				
 				//decide winning
-				int winner2 = serverBoard.isGameOver(p2Col - 1);
-				if(winner2 == -1)
+				int winner2 = serverBoard.isGameOver();
+				if(winner2 == 2)
 				{
 					p2GameMove.setGameOver(false);
 					player1Wins = false;

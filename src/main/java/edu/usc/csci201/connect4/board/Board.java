@@ -1,283 +1,317 @@
 package edu.usc.csci201.connect4.board;
 
-public class Board {
-	private int[][] board = new int[6][7];
-	
+import java.util.Scanner;
+
+public class Board
+{
+
+	private static int row = 7;
+	private static int col = 8;
+	private int currRow = 1;
+	private int currCol = 1;
+	private static int turns = 0;
+
+	private int[][] board = new int[row][col];
+
+	// Initialize the board to 0's
 	public Board()
 	{
-		
+		for (int i = 1; i < row; i++)
+		{
+			for (int j = 1; j < col; j++)
+			{
+				board[i][j] = 0;
+			}
+		}
 	}
-	
-	//print board
+
+	// print board
 	public void printBoard()
 	{
-		for(int i = 0; i < 6; i++)
+		for (int i = row - 1; i > 0; i--)
 		{
-			for(int j = 0; j < 7; j++)
+			for (int j = 1; j < col; j++)
 			{
-				if(board[i][j] == 0)
+				System.out.print(board[i][j]);
+			}
+
+			System.out.println();
+		}
+	}
+
+	// board is full
+	public boolean isFull()
+	{
+		if (Integer.compare(turns, 42) == 0)
+			return true;
+
+		else
+			return false;
+	}
+
+	// place piece
+	public void placePiece(int column, boolean isP1)
+	{
+		Scanner scanner = null;
+		boolean isValid = false;
+
+
+		while (!isValid)
+		{
+			boolean inputValid = false;
+			if (column > 7 || column < 1)
+			{
+				System.out.println(
+						"Please enter a legitimate integer for a column (1 – 7): ");
+
+				
+
+				while (!inputValid)
 				{
-					System.out.print(".");
+					try
+					{
+						scanner = new Scanner(System.in);
+						column = Integer.parseInt(scanner.nextLine());
+						inputValid = true;
+					}
+					catch (NumberFormatException e)
+					{
+						System.out.println("Please enter an integer: ");
+					}
 				}
-				else if(board[i][j] == 1)
+			}
+			else if (board[row - 1][column] == 1 || board[row - 1][column] == 2)
+			{
+				System.out.println(
+						"Please enter an integer for a column that is not full: ");
+				while (!inputValid)
 				{
-					System.out.print("o");
+					try
+					{
+						scanner = new Scanner(System.in);
+						column = Integer.parseInt(scanner.nextLine());
+						inputValid = true;
+					}
+					catch (NumberFormatException e)
+					{
+						System.out.println("Please enter an integer: ");
+					}
+				}
+			}
+
+			else
+			{
+				isValid = true;
+			}
+
+		}
+		
+		boolean placedPiece = false;
+		currRow = 1;
+		currCol = column;
+		
+		while (currRow < row && !placedPiece)
+		{
+			if (board[currRow][column] == 0)
+			{
+				if (isP1)
+				{
+					board[currRow][column] = 1;
+					turns++;
 				}
 				else
 				{
-					System.out.print("x");
+					board[currRow][column] = 2;
+					turns++;
 				}
+				placedPiece = true;
 			}
-			
-			System.out.print("\n");
-		}
-	}
-	
-	//board is full
-	public boolean isFull()
-	{
-		for(int i = 0; i < 6; i++)
-		{
-			for(int j = 0; j < 7; j++)
+			else
 			{
-				if(board[i][j] == 0)
-				{
-					return false;
-				}
+				currRow++;
 			}
 		}
-		
-		return true;
 	}
 	
-	//place piece !Note: col here starts from 1!!!
-	public void placePiece(int col, boolean isP1) throws RuntimeException
+	//Returns 0 if there is no winner, 1 if player 1 wins, 2 if player 2 wins
+	public int isGameOver()
 	{
-		//check for valid move and place piece
-		if(isValidMove(col - 1))
+		boolean foundOtherPiece = false;
+		int fourCount = 1;
+		int checkRow = currRow;
+		int checkCol = currCol;
+		
+		//Check above us
+		checkRow++;
+		while (checkRow < row && !foundOtherPiece)
 		{
-			for(int i = 5; i >= 0; i--)
+			if (Integer.compare(board[checkRow][currCol] , board[currRow][currCol]) == 0)
 			{
-				if(board[i][col - 1] == 0)
-				{
-					if(isP1)
-					{
-						board[i][col - 1] = 1;
-					}
-					else
-					{
-						board[i][col - 1] = -1;
-					}
-					
-					return;
-				}
+				fourCount++;
+				checkRow++;
+			}
+			else
+			{
+				foundOtherPiece = true;
 			}
 		}
-		else
+		
+		//Check below us
+		checkRow = currRow - 1;
+		foundOtherPiece = false;
+		
+		while (checkRow > 0 && !foundOtherPiece)
 		{
-			throw new RuntimeException();
-		}
-	}
-	
-	public boolean isValidMove(int col) {
-		if(col > 6 || col < 0) {
-			return false;
-		}
-		
-		if(board[0][col] != 0) {
-			return false;
-		}
-		
-		return true;
-	}
-	
-	public int isGameOver(int playerMove) {
-		int count = 0;
-		int row = 6;
-		int col = 7;
-		
-		int x = 0;
-		while(board[x][playerMove] == 0) {
-			x++;
-		}
-		
-		int player = board[x][playerMove];
-		
-		int tempRow = x;
-		int tempCol = playerMove;
-		
-		//vertical win check
-		if(board[tempRow+1][tempCol] == player || board[tempRow-1][tempCol] == player) {
-			while(board[++tempRow][tempCol] == player) {
-				count++;
+			if (Integer.compare(board[checkRow][currCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkRow--;
 			}
-			tempRow = x;
-			while(board[--tempRow][tempCol] == player) {
-				count++;
-			}
-			
-			if(count >= 4) {
-				return player;
-			}
-			else {
-				count = 0;
+			else
+			{
+				foundOtherPiece = true;
 			}
 		}
 		
-		tempRow = x;
-		tempCol = playerMove;
-		//horizontal win check
-		if(board[tempRow][tempCol+1] == player || board[tempRow][tempCol-1] == player) {
-			while(board[tempRow][++tempCol] == player) {
-				count++;
-			}
-			tempCol = playerMove;
-			while(board[x][--tempCol] == player) {
-				count++;
-			}
-			
-			if(count >= 4) {
-				return player;
-			}
-			else {
-				count = 0;
-			}
+		//Check to see if we got more than 3 in a row (4 or greater)
+		if (Integer.compare(fourCount , 3) == 1)
+		{
+			return board[currRow][currCol];
 		}
 		
-		tempRow = x;
-		tempCol = playerMove;
-		//diagonal win check
-		if(board[tempRow+1][tempCol+1] == player || board[tempRow-1][tempCol-1] == player) {
-			while(board[++tempRow][++tempCol] == player) {
-				count++;
+		//Check to the right of us
+		fourCount = 1;
+		checkCol++;
+		foundOtherPiece = false;
+		while (checkCol < col && !foundOtherPiece)
+		{
+			if (Integer.compare(board[currRow][checkCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkCol++;
 			}
-			tempRow = x;
-			tempCol = playerMove;
-			while(board[--tempRow][--tempCol] == player) {
-				count++;
-			}
-			
-			if(count >= 4) {
-				return player;
-			}
-			else {
-				count = 0;
-			}
-		}
-		
-		tempRow = x;
-		tempCol = playerMove;
-		//diagonal win check 2
-		if(board[tempRow+1][tempCol-1] == player || board[tempRow+1][tempCol-1] == player) {
-			while(board[++tempRow][--tempCol] == player) {
-				count++;
-			}
-			tempRow = x;
-			tempCol = playerMove;
-			while(board[--tempRow][++tempCol] == player) {
-				count++;
-			}
-			
-			if(count >= 4) {
-				return player;
-			}
-			else {
-				count = 0;
+			else
+			{
+				foundOtherPiece = true;
 			}
 		}
 		
 		
 		
-		/*for(int i = 0; i < col; i++) {
-			int piece = 2;
-			for(int j = 0; j < row; j++) {
-				if(piece == board[i][j]) {
-					count++;
-				}
-				else {
-					count = 0;
-				}
-				
-				if(count >= 4) {
-					return piece;
-				}
-				piece = board[j][i];
+		//Check to the left of us
+		checkCol = currCol - 1;
+		foundOtherPiece = false;
+
+		while (checkCol > 0 && !foundOtherPiece)
+		{
+			if (Integer.compare(board[currRow][checkCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkCol--;
 			}
-			
+			else
+			{
+				foundOtherPiece = true;
+			}
 		}
 		
-		for(int i = 0; i < row; i++) {
-			int piece = 2;
-			for(int j = 0; j < col; j++) {
-				if(piece == board[i][j]) {
-					count++;
-				}
-				else {
-					count = 0;
-				}
-				
-				if(count >= 4) {
-					return piece;
-				}
-				piece = board[j][i];
-			}
-			
+		//Check to see if we got more than 3 in a row (4 or greater)
+		if (Integer.compare(fourCount , 3) == 1)
+		{
+			return board[currRow][currCol];
 		}
 		
-		for(int i = 0; i < row; i++) {
-			int piece = 2;
-			for(int j = 0; j < col; j++) {
-				if(board[i][j] != 0) {
-					piece = board[i][j];
-					
-					if(board[i+1][j+1] == piece) {
-						int currRow = i;
-						int currCol = j;
-						
-						while(board[++currRow][++currCol] == piece) {
-							count++;
-						}
-						
-						currRow = i;
-						currCol = j;
-						
-						while(board[--currRow][--currCol] == piece) {
-							count++;
-						}
-						
-						if(count >= 4) {
-							return piece;
-						}
-						else {
-							count = 0;
-						}
-					}
-					
-					if(board[i+1][j-1] == piece) {
-						int currRow = i;
-						int currCol = j;
-						
-						while(board[++currRow][--currCol] == piece) {
-							count++;
-						}
-						
-						currRow = i;
-						currCol = j;
-						
-						while(board[--currRow][++currCol] == piece) {
-							count++;
-						}
-						
-						if(count >= 4) {
-							return piece;
-						}
-						else {
-							count = 0;
-						}
-					}
-				}
+		//Check diagonally up/left
+		fourCount = 1;
+		checkRow = currRow + 1;
+		checkCol = currCol - 1;
+		foundOtherPiece = false;
+		
+		while (checkRow < row && checkCol > 0 && !foundOtherPiece)
+		{
+			if (Integer.compare(board[checkRow][checkCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkRow++;
+				checkCol--;
 			}
-		}*/
+			else
+			{
+				foundOtherPiece = true;
+			}
+		}
+		
+		//Check diagonally down/right
+		checkRow = currRow - 1;
+		checkCol = currCol + 1;
+		foundOtherPiece = false;
+		
+		while (checkRow > 0 && checkCol < col && !foundOtherPiece)
+		{
+			if (Integer.compare(board[checkRow][checkCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkRow--;
+				checkCol++;
+			}
+			else
+			{
+				foundOtherPiece = true;
+			}
+		}
+		
+		//Check to see if we got more than 3 in a row (4 or greater)
+		if (Integer.compare(fourCount , 3) == 1)
+		{
+			return board[currRow][currCol];
+		}
+		
+		//Check diagonally up/right
+		fourCount = 1;
+		checkRow = currRow + 1;
+		checkCol = currCol + 1;
+		foundOtherPiece = false;
+		
+		while (checkRow < row && checkCol < col && !foundOtherPiece)
+		{
+			if (Integer.compare(board[checkRow][checkCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkRow++;
+				checkCol++;
+			}
+			else
+			{
+				foundOtherPiece = true;
+			}
+		}
+		
+		//Check diagonally down/left
+		
+		checkRow = currRow - 1;
+		checkCol = currCol - 1;
+		foundOtherPiece = false;
+
+		while (checkRow > 0 && checkCol > 0 && !foundOtherPiece)
+		{
+			if (Integer.compare(board[checkRow][checkCol] , board[currRow][currCol]) == 0)
+			{
+				fourCount++;
+				checkRow--;
+				checkCol--;
+			}
+			else
+			{
+				foundOtherPiece = true;
+			}
+		}
+		
+		//Check to see if we got more than 3 in a row (4 or greater)
+		if (Integer.compare(fourCount , 3) == 1)
+		{
+			return board[currRow][currCol];
+		}
+		
 		return 0;
 	}
 }
