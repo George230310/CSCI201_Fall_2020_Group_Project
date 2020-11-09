@@ -133,6 +133,83 @@ public class Board
 		}
 	}
 	
+	public void placeServerPiece(int column, boolean isP1)
+	{
+		Scanner scanner = null;
+		boolean isValid = false;
+
+
+		while (!isValid)
+		{
+			boolean inputValid = false;
+			if (column > 7 || column < 1)
+			{
+				
+				while (!inputValid)
+				{
+					try
+					{
+						scanner = new Scanner(System.in);
+						column = Integer.parseInt(scanner.nextLine());
+						inputValid = true;
+					}
+					catch (NumberFormatException e)
+					{
+						
+					}
+				}
+			}
+			else if (board[row - 1][column] == 1 || board[row - 1][column] == 2)
+			{
+				while (!inputValid)
+				{
+					try
+					{
+						scanner = new Scanner(System.in);
+						column = Integer.parseInt(scanner.nextLine());
+						inputValid = true;
+					}
+					catch (NumberFormatException e)
+					{
+						
+					}
+				}
+			}
+
+			else
+			{
+				isValid = true;
+			}
+
+		}
+		
+		boolean placedPiece = false;
+		currRow = 1;
+		currCol = column;
+		
+		while (currRow < row && !placedPiece)
+		{
+			if (board[currRow][column] == 0)
+			{
+				if (isP1)
+				{
+					board[currRow][column] = 1;
+					turns++;
+				}
+				else
+				{
+					board[currRow][column] = 2;
+					turns++;
+				}
+				placedPiece = true;
+			}
+			else
+			{
+				currRow++;
+			}
+		}
+	}
+	
 	//Returns 0 if there is no winner, 1 if player 1 wins, 2 if player 2 wins
 	public int isGameOver()
 	{

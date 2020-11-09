@@ -64,7 +64,7 @@ public class HandleGameSession implements Runnable{
 				//receive input from player 1
 				GameCommand p1GameMove = (GameCommand)fromPlayer1.readObject();
 				int p1Col = ((GameCommand)p1GameMove).getMove();
-				serverBoard.placePiece(p1Col, true);
+				serverBoard.placeServerPiece(p1Col, true);
 				
 				p1GameMove.setResponseCol(p1Col);
 				p1GameMove.setResponse("Player 1 places a piece on column " + p1Col);
@@ -97,7 +97,7 @@ public class HandleGameSession implements Runnable{
 				//receive input from player 2
 				GameCommand p2GameMove = (GameCommand)fromPlayer2.readObject();
 				int p2Col = ((GameCommand)p2GameMove).getMove();
-				serverBoard.placePiece(p2Col, false);
+				serverBoard.placeServerPiece(p2Col, false);
 				
 				p2GameMove.setResponseCol(p2Col);
 				p2GameMove.setResponse("Player 2 places a piece on column " + p2Col);
