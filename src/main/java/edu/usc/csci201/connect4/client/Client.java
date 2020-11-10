@@ -206,7 +206,7 @@ public class Client
 		{
 			put("help", new String[]
 			{
-					"register", "login", "quit", "guest", "play"
+					"register", "login", "quit", "guest", "play", "highscore"
 			});
 			put("register", new String[]
 			{
@@ -219,6 +219,7 @@ public class Client
 			put("quit", new String[0]);
 			put("guest", new String[0]);
 			put("play", new String[0]);
+			put("highscore", new String[0]);
 		}
 	};
 
@@ -306,6 +307,17 @@ public class Client
 					PlayGame(gameIn, gameOut, ((StartGameCommand)startSignal).isPlayer1());
 				}
 			}
+			else if(rawCmd.getClass() == GetHighScoresCommand.class)
+			{
+				if(rawCmd.getResponse() != null)
+				{
+					Log.printClient(rawCmd.getResponse());
+				}
+				else
+				{
+					Log.printClient("No high score info available");
+				}
+			}
 		}
 		catch (ClassNotFoundException e)
 		{
@@ -355,6 +367,12 @@ public class Client
 		else if (args[0].equals("login"))
 		{
 			command = new LoginCommand(args[1], args[2]);
+		}
+		
+		//high score command, which showcases the high score
+		else if(args[0].equals("highscore"))
+		{
+			command = new GetHighScoresCommand();
 		}
 		
 		//play the game command, which should prompt player for create lobby or join lobby

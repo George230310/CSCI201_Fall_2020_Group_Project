@@ -158,7 +158,22 @@ final class ClientReader extends Thread {
 		} else if (rawCommand.getClass() == LoginCommand.class) {
 			fb.loginUser(((LoginCommand) rawCommand).getEmail(), ((LoginCommand) rawCommand).getPassword(), handler, this);
 		} else if (rawCommand.getClass() == GetHighScoresCommand.class) {
-			//Not sure how to implement
+			//TODO: store the high score list as a properly formatted string in rawCommand.response
+			
+			/*
+			 * if(can retrieve high score)
+			 * {
+			 * 
+			 * rawCommand.setResponse(a formatted string of high score list)
+			 * 
+			 * }
+			 * 
+			 * 
+			 * 
+			 * 
+			 * 
+			 */
+			
 		} else if (rawCommand.getClass() == CreateLobbyCommand.class) {
 			//Create a Lobby
 			CreateLobbyCommand command = (CreateLobbyCommand) rawCommand;
