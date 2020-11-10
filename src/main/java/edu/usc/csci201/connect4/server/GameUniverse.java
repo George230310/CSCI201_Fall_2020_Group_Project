@@ -67,12 +67,13 @@ public class GameUniverse {
 	public static void startGame(String gameName)
 	{
 		//start the game session
-				Socket player1 = GameUniverse.nameToServerThreads.get(gameName).get(0).getSocket();
-				Socket player2 = GameUniverse.nameToServerThreads.get(gameName).get(1).getSocket();
-				ClientReader player1Reader = GameUniverse.nameToServerThreads.get(gameName).get(0);
-				ClientReader player2Reader = GameUniverse.nameToServerThreads.get(gameName).get(1);
-				String player1Name = GameUniverse.nameToServerThreads.get(gameName).get(0).getID();
-				String player2Name = GameUniverse.nameToServerThreads.get(gameName).get(1).getID();
+				ArrayList<ClientReader> readers = GameUniverse.nameToServerThreads.get(gameName);
+				Socket player1 = readers.get(0).getSocket();
+				Socket player2 = readers.get(1).getSocket();
+				ClientReader player1Reader = readers.get(0);
+				ClientReader player2Reader = readers.get(1);
+				String player1Name = readers.get(0).getID();
+				String player2Name = readers.get(1).getID();
 				new Thread(new HandleGameSession
 						(player1, player2, gameName, player1Name, player2Name, player1Reader, player2Reader)).start();
 				System.out.println(TimeStamp.getTimestamp() + " " + gameName + " has been started");

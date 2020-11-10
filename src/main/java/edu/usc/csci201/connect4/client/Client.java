@@ -16,7 +16,6 @@ import edu.usc.csci201.connect4.utils.Log;
 public class Client
 {
 
-	// Commands available during bootup (such as registering) and when you're in the game
 	private static Scanner scanner;
 	private static ObjectOutputStream os;
 	private static ObjectInputStream is;

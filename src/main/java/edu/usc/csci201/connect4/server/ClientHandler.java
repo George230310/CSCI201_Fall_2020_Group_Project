@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import com.google.firebase.auth.UserRecord;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 
 import edu.usc.csci201.connect4.server.AuthEventCallback.LoginEventListener;
@@ -240,8 +241,8 @@ class DatabaseEventCallback {
 	public interface SetValueAsyncEventListener extends DatabaseEventListener { 
 		public void onSetValueAtPathAsync(DatabaseReference dbr);
 		public void onSetValueAtPathAsyncFail(DatabaseReference dbr, String error);
-		public void onGetValueAtPathAsync(DatabaseReference dbr);
-		public void onGetValueAtPathAsyncFail(DatabaseReference dbr, String error);
+		public void onGetValueAtPathAsync(Object value);
+		public void onGetValueAtPathAsyncFail(DatabaseReference dbr, DatabaseError error);
 	} 
 	
 }
