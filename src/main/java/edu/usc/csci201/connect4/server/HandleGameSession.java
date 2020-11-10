@@ -137,13 +137,13 @@ public class HandleGameSession implements Runnable{
 			else if(player1Wins.booleanValue() && player1Name != null)
 			{
 				//TODO: save player1 score to database
-				
+				p1Reader.incrementHighscore();
 				
 			}
 			else if(!player1Wins.booleanValue() && player2Name != null)
 			{
 				//TODO: save player2 score to database
-				
+				p2Reader.incrementHighscore();
 				
 			}
 		}

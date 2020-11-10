@@ -239,6 +239,10 @@ final class ClientReader extends Thread {
 		//Do not process Game Move
 	}
 	
+	public void incrementHighscore() {
+		fb.incrementHighscore(this.id);
+	}
+	
 	public String getID() { return this.id; }
 	public void setID(String id) { this.id = id; }
 	

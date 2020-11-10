@@ -38,6 +38,7 @@ public class FirebaseServer {
 	
 	private FirebaseAuth firebaseAuth;
 	private FirebaseDatabase firebaseDatabase;
+	private final String HIGHSCORE_PATH = "highscores/";
 	
 	public FirebaseServer (String credentialPath) {
 		
@@ -120,6 +121,57 @@ public class FirebaseServer {
 			}
 			
 		}).start(); 
+	}
+	
+	public void incrementHighscore(String uid) {
+		if (uid == null) return;
+		
+		final DatabaseReference dbr = firebaseDatabase.getReference(HIGHSCORE_PATH + uid);
+		// Attach a listener to read the data at our highscores reference
+		ValueEventListener listener = new ValueEventListener() {
+			  
+			  public void onDataChange(DataSnapshot dataSnapshot) {
+				Object val = dataSnapshot.getValue();
+			    if (val == null) {
+			    	dbr.setValueAsync(1);
+			    } else if (val.getClass() == Long.class) {
+			    	Long newVal = ((Long) val)+1;
+			    	dbr.setValueAsync(newVal);
+			    } else {
+			    	Log.printServer("[FATAL] Somehow we pushed a non-number to the highscore's database. Manually remove it or figure why this happened. typeof is " + val.getClass());
+			    }
+			  }
+
+			  public void onCancelled(DatabaseError databaseError) {
+			    System.out.println("The read failed: " + databaseError.getCode());
+			  }
+			};
+		
+		dbr.addListenerForSingleValueEvent(listener);
+	}
+	
+	public void getHighscore(final String uid, final SetValueAsyncEventListener listener) {
+		
+		final DatabaseReference dbr = firebaseDatabase.getReference(HIGHSCORE_PATH + uid);
+		// Attach a listener to read the data at our highscores reference
+		dbr.addListenerForSingleValueEvent(new ValueEventListener() {
+			  
+			  public void onDataChange(DataSnapshot dataSnapshot) {
+				Object val = dataSnapshot.getValue();
+			    if (val == null) {
+			    	listener.onGetValueAtPathAsync(0);
+			    } else if (val.getClass() == Long.class) {
+			    	listener.onGetValueAtPathAsync(val);
+			    } else {
+			    	Log.printServer("[FATAL] Somehow we pushed a non-number to the highscore's database. Manually remove it or figure why this happened. typeof is " + val.getClass());
+			    }
+			  }
+
+			  public void onCancelled(DatabaseError databaseError) {
+			    Log.printServer("Failed to get score for player with UID " + uid);
+			    listener.onGetValueAtPathAsyncFail(dbr, databaseError);
+			  }
+			});
 	}
 	
 	public void setValueAtPathAsync(final String path, final Object value, final SetValueAsyncEventListener listener) {
