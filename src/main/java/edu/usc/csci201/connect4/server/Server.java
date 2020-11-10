@@ -174,6 +174,12 @@ final class ClientReader extends Thread {
 			 * 
 			 */
 			
+			try {
+				os.writeObject(rawCommand);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		} else if (rawCommand.getClass() == CreateLobbyCommand.class) {
 			//Create a Lobby
 			CreateLobbyCommand command = (CreateLobbyCommand) rawCommand;

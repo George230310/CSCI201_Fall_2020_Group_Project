@@ -272,7 +272,7 @@ public class Client
 		{
 			//ClientCommand is an interface which gets/sets responses
 			ClientCommand rawCmd = (ClientCommand) is.readObject();
-			if (rawCmd.getResponse() != "")
+			if (rawCmd.getResponse() != null && rawCmd.getResponse() != "")
 				Log.printServer(rawCmd.getResponse());
 			
 			//handle the create lobby response
@@ -305,17 +305,6 @@ public class Client
 					
 					//all games logic go below
 					PlayGame(gameIn, gameOut, ((StartGameCommand)startSignal).isPlayer1());
-				}
-			}
-			else if(rawCmd.getClass() == GetHighScoresCommand.class)
-			{
-				if(rawCmd.getResponse() != null)
-				{
-					Log.printClient(rawCmd.getResponse());
-				}
-				else
-				{
-					Log.printClient("No high score info available");
 				}
 			}
 		}
