@@ -7,7 +7,7 @@ public class Board
 	private static int col = 8;
 	private int currRow = 1;
 	private int currCol = 1;
-	private static int turns = 0;
+	private int turns = 0;
 
 	private int[][] board = new int[row][col];
 
