@@ -158,26 +158,16 @@ final class ClientReader extends Thread {
 		} else if (rawCommand.getClass() == LoginCommand.class) {
 			fb.loginUser(((LoginCommand) rawCommand).getEmail(), ((LoginCommand) rawCommand).getPassword(), handler, this);
 		} else if (rawCommand.getClass() == GetHighScoresCommand.class) {
-			//TODO: store the high score list as a properly formatted string in rawCommand.response
 			
-			/*
-			 * if(can retrieve high score)
-			 * {
-			 * 
-			 * rawCommand.setResponse(a formatted string of high score list)
-			 * 
-			 * }
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 */
-			
-			try {
-				os.writeObject(rawCommand);
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (id.length() < 20) {
+				rawCommand.setResponse("Can't retrieve high scores as an unauthenticated user.");
+				try {
+					os.writeObject(rawCommand);
+				} catch (IOException e) {
+					Log.printServer("Failed to write highscore response to client with ID " + id);
+				}
+			} else {
+				fb.getHighscores(handler);
 			}
 			
 		} else if (rawCommand.getClass() == CreateLobbyCommand.class) {

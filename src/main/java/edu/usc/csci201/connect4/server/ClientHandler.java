@@ -11,6 +11,7 @@ import com.google.firebase.database.DatabaseReference;
 import edu.usc.csci201.connect4.server.AuthEventCallback.LoginEventListener;
 import edu.usc.csci201.connect4.server.AuthEventCallback.RegisterEventListener;
 import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
+import edu.usc.csci201.connect4.server.DatabaseEventCallback.GetHighscoresEventListener;
 import edu.usc.csci201.connect4.utils.Log;
 
 public class ClientHandler {
@@ -162,7 +163,7 @@ public class ClientHandler {
 	}
 }
 
-class ClientCompletionHandler implements LoginEventListener, RegisterEventListener {
+class ClientCompletionHandler implements LoginEventListener, RegisterEventListener, GetHighscoresEventListener {
 
 	final ObjectOutputStream os;
 	final ClientCommand cmd;
@@ -173,8 +174,8 @@ class ClientCompletionHandler implements LoginEventListener, RegisterEventListen
 	}
 	
 	public void onLogin(UserRecord user, Object sender) {
-		((ClientReader) sender).setID(user.getUid());
 		cmd.setResponse("Successfully logged in user with ID " + ((ClientReader) sender).getID() + " and UID " + user.getUid());
+		((ClientReader) sender).setID(user.getUid());
 		cmd.setSuccessful();
 		try {
 			os.writeObject(cmd);
@@ -205,8 +206,8 @@ class ClientCompletionHandler implements LoginEventListener, RegisterEventListen
 	}
 	
 	public void onRegister(UserRecord user, Object sender) {
-		((ClientReader) sender).setID(user.getUid());
 		cmd.setResponse("Successfully registered user with id " + ((ClientReader) sender).getID() + " and UID " + user.getUid());
+		((ClientReader) sender).setID(user.getUid());
 		cmd.setSuccessful();
 		try {
 			os.writeObject(cmd);
@@ -214,6 +215,26 @@ class ClientCompletionHandler implements LoginEventListener, RegisterEventListen
 			Log.printServer("Failed to write register response to client with ID " + ((ClientReader) sender).getID());
 		}
 		if (sender != null) { synchronized (sender) { sender.notify(); } }
+	}
+
+	public void onGetHighscores(String scores) {
+		cmd.setResponse(scores);
+		cmd.setSuccessful();
+		try {
+			os.writeObject(cmd);
+		} catch (IOException e) {
+			Log.printServer("Failed to write back highscores with error " + e.getMessage());
+		}
+	}
+
+	public void onGetHighscoresFail(String error) {
+		cmd.setResponse(error);
+		try {
+			os.writeObject(cmd);
+		} catch (IOException e) {
+			Log.printServer("Failed to get highscores with error " + e.getMessage());
+		}
+		
 	}
 
 }
@@ -244,6 +265,11 @@ class DatabaseEventCallback {
 		public void onGetValueAtPathAsync(Object value);
 		public void onGetValueAtPathAsyncFail(DatabaseReference dbr, DatabaseError error);
 	} 
+	
+	public interface GetHighscoresEventListener extends DatabaseEventListener {
+		public void onGetHighscores(String scores);
+		public void onGetHighscoresFail(String error);
+	}
 	
 }
 

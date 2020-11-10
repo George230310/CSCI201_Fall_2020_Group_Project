@@ -11,15 +11,24 @@ package edu.usc.csci201.connect4.server;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
-import com.google.api.client.http.MultipartContent.Part;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.EmailIdentifier;
 import com.google.firebase.auth.ExportedUserRecord;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.GetUsersResult;
+import com.google.firebase.auth.ListUsersPage;
+import com.google.firebase.auth.PhoneIdentifier;
+import com.google.firebase.auth.ProviderIdentifier;
+import com.google.firebase.auth.UidIdentifier;
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.auth.UserRecord.CreateRequest;
 import com.google.firebase.database.DataSnapshot;
@@ -30,6 +39,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import edu.usc.csci201.connect4.server.AuthEventCallback.LoginEventListener;
 import edu.usc.csci201.connect4.server.AuthEventCallback.RegisterEventListener;
+import edu.usc.csci201.connect4.server.DatabaseEventCallback.GetHighscoresEventListener;
 import edu.usc.csci201.connect4.server.DatabaseEventCallback.SetValueAsyncEventListener;
 import edu.usc.csci201.connect4.utils.Log;
 import edu.usc.csci201.connect4.utils.Utils;
@@ -174,6 +184,56 @@ public class FirebaseServer {
 			});
 	}
 	
+	public void getHighscores(final GetHighscoresEventListener listener) {
+		
+		final DatabaseReference dbr = firebaseDatabase.getReference(HIGHSCORE_PATH);
+		
+		
+		try {
+			
+			ListUsersPage page = firebaseAuth.listUsers(null);
+			final Map<String, String> masterUsers = new HashMap<String, String>();
+			while (page != null) {
+			  for (ExportedUserRecord user : page.getValues()) {
+			    masterUsers.put(user.getUid(), user.getEmail());
+			  }
+			  page = page.getNextPage();
+			}
+			
+			// Attach a listener to read the data at our highscores reference
+			dbr.addListenerForSingleValueEvent(new ValueEventListener() {
+				  
+				@SuppressWarnings("unchecked")
+				public void onDataChange(DataSnapshot dataSnapshot) {
+					Object val = dataSnapshot.getValue();
+				    if (val == null) {
+				    	listener.onGetHighscores("No highscores available.");
+				    } else if (val.getClass() == HashMap.class) {
+				    	StringBuffer sb = new StringBuffer("*** Highscores ***\n");
+				    	for (Entry<String, Long> entry : ((HashMap<String, Long>) val).entrySet()) {
+				    		if (masterUsers.containsKey(entry.getKey())) sb.append(masterUsers.get(entry.getKey()) + " - " + entry.getValue());
+				    	}
+				    	listener.onGetHighscores(sb.toString());
+
+				    } else {
+				    	listener.onGetHighscoresFail("Could not read highscores. Database fatal error. Highscore type is " + val.getClass() + " when it should be HashMap");
+				    }
+				  }
+
+				  public void onCancelled(DatabaseError databaseError) {
+				    Log.printServer("Failed to get score for players");
+				    listener.onGetHighscoresFail(databaseError.getMessage());
+				  }
+				});
+		} catch (FirebaseAuthException e) {
+			listener.onGetHighscoresFail("Failed to get highscores. " + e.getMessage());
+		}
+
+
+		
+
+	}
+	
 	public void setValueAtPathAsync(final String path, final Object value, final SetValueAsyncEventListener listener) {
 		
 		new Thread(new Runnable() { 
@@ -244,27 +304,6 @@ public class FirebaseServer {
 		request.setDisplayName(Utils.encrypt(pass));
 		
 		return firebaseAuth.createUser(request);
-	}
-	
-	private Iterable<ExportedUserRecord> listUsers() throws FirebaseAuthException {
-		return firebaseAuth.listUsers(null, 100).iterateAll();
-	}
-	
-	@SuppressWarnings("unused")
-	private void listen() {
-		DatabaseReference ref = firebaseDatabase.getReference("lobbies/lobby1");
-		
-		ref.addValueEventListener(new ValueEventListener() {
-			
-			  public void onDataChange(DataSnapshot dataSnapshot) {
-			    Part post = dataSnapshot.getValue(Part.class);
-			    System.out.println(post);
-			  }
-
-			  public void onCancelled(DatabaseError databaseError) {
-			    System.out.println("The read failed: " + databaseError.getCode());
-			  }
-			});
 	}
 
 }
