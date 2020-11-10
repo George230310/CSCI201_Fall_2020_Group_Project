@@ -1,7 +1,5 @@
 package edu.usc.csci201.connect4.board;
 
-import java.util.Scanner;
-
 public class Board
 {
 
@@ -32,7 +30,18 @@ public class Board
 		{
 			for (int j = 1; j < col; j++)
 			{
-				System.out.print(board[i][j]);
+				if(board[i][j] == 0)
+				{
+					System.out.print(".");
+				}
+				else if(board[i][j] == 1)
+				{
+					System.out.print("O");
+				}
+				else
+				{
+					System.out.print("X");
+				}
 			}
 
 			System.out.println();
@@ -48,164 +57,51 @@ public class Board
 		else
 			return false;
 	}
+	
+	//checking legal move
+	public boolean isLegalMove(int col) throws RuntimeException
+	{
+		if (col > 7 || col < 1)
+		{
+			throw new RuntimeException();
+		}
+		else if(board[row - 1][col] == 1 || board[row - 1][col] == 2)
+		{
+			throw new RuntimeException();
+		}
+		
+		return true;
+	}
 
 	// place piece
-	public void placePiece(int column, boolean isP1)
+	public void placePiece(int column, boolean isP1) throws RuntimeException
 	{
-		Scanner scanner = null;
-		boolean isValid = false;
-
-
-		while (!isValid)
+		if(isLegalMove(column))
 		{
-			boolean inputValid = false;
-			if (column > 7 || column < 1)
+			boolean placedPiece = false;
+			currRow = 1;
+			currCol = column;
+			
+			while (currRow < row && !placedPiece)
 			{
-				System.out.println(
-						"Please enter a legitimate integer for a column (1 – 7): ");
-
-				
-
-				while (!inputValid)
+				if (board[currRow][column] == 0)
 				{
-					try
+					if (isP1)
 					{
-						scanner = new Scanner(System.in);
-						column = Integer.parseInt(scanner.nextLine());
-						inputValid = true;
+						board[currRow][column] = 1;
+						turns++;
 					}
-					catch (NumberFormatException e)
+					else
 					{
-						System.out.println("Please enter an integer: ");
+						board[currRow][column] = 2;
+						turns++;
 					}
-				}
-			}
-			else if (board[row - 1][column] == 1 || board[row - 1][column] == 2)
-			{
-				System.out.println(
-						"Please enter an integer for a column that is not full: ");
-				while (!inputValid)
-				{
-					try
-					{
-						scanner = new Scanner(System.in);
-						column = Integer.parseInt(scanner.nextLine());
-						inputValid = true;
-					}
-					catch (NumberFormatException e)
-					{
-						System.out.println("Please enter an integer: ");
-					}
-				}
-			}
-
-			else
-			{
-				isValid = true;
-			}
-
-		}
-		
-		boolean placedPiece = false;
-		currRow = 1;
-		currCol = column;
-		
-		while (currRow < row && !placedPiece)
-		{
-			if (board[currRow][column] == 0)
-			{
-				if (isP1)
-				{
-					board[currRow][column] = 1;
-					turns++;
+					placedPiece = true;
 				}
 				else
 				{
-					board[currRow][column] = 2;
-					turns++;
+					currRow++;
 				}
-				placedPiece = true;
-			}
-			else
-			{
-				currRow++;
-			}
-		}
-	}
-	
-	public void placeServerPiece(int column, boolean isP1)
-	{
-		Scanner scanner = null;
-		boolean isValid = false;
-
-
-		while (!isValid)
-		{
-			boolean inputValid = false;
-			if (column > 7 || column < 1)
-			{
-				
-				while (!inputValid)
-				{
-					try
-					{
-						scanner = new Scanner(System.in);
-						column = Integer.parseInt(scanner.nextLine());
-						inputValid = true;
-					}
-					catch (NumberFormatException e)
-					{
-						
-					}
-				}
-			}
-			else if (board[row - 1][column] == 1 || board[row - 1][column] == 2)
-			{
-				while (!inputValid)
-				{
-					try
-					{
-						scanner = new Scanner(System.in);
-						column = Integer.parseInt(scanner.nextLine());
-						inputValid = true;
-					}
-					catch (NumberFormatException e)
-					{
-						
-					}
-				}
-			}
-
-			else
-			{
-				isValid = true;
-			}
-
-		}
-		
-		boolean placedPiece = false;
-		currRow = 1;
-		currCol = column;
-		
-		while (currRow < row && !placedPiece)
-		{
-			if (board[currRow][column] == 0)
-			{
-				if (isP1)
-				{
-					board[currRow][column] = 1;
-					turns++;
-				}
-				else
-				{
-					board[currRow][column] = 2;
-					turns++;
-				}
-				placedPiece = true;
-			}
-			else
-			{
-				currRow++;
 			}
 		}
 	}
