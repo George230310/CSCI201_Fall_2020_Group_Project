@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.*;
 import edu.usc.csci201.connect4.board.Board;
 import edu.usc.csci201.connect4.server.ClientHandler.*;
+import edu.usc.csci201.connect4.utils.Log;
 
 public class HandleGameSession implements Runnable{
 	
@@ -70,18 +71,18 @@ public class HandleGameSession implements Runnable{
 				p1GameMove.setResponse("Player 1 places a piece on column " + p1Col);
 				p1GameMove.setSuccessful();
 				
+				//check if the board is full
+				if(serverBoard.isFull())
+				{
+					p1GameMove.setGameOver(null);
+				}
+				
 				//decide winning
 				int winner = serverBoard.isGameOver();
 				if(winner == 1)
 				{
 					p1GameMove.setGameOver(true);
 					player1Wins = true;
-				}
-				
-				//check if the board is full
-				if(serverBoard.isFull())
-				{
-					p1GameMove.setGameOver(null);
 				}
 				
 				//inform player1 of result
@@ -103,6 +104,12 @@ public class HandleGameSession implements Runnable{
 				p2GameMove.setResponse("Player 2 places a piece on column " + p2Col);
 				p2GameMove.setSuccessful();
 				
+				//check if the board is full
+				if(serverBoard.isFull())
+				{
+					p2GameMove.setGameOver(null);
+				}
+				
 				//decide winning
 				int winner2 = serverBoard.isGameOver();
 				if(winner2 == 2)
@@ -110,12 +117,6 @@ public class HandleGameSession implements Runnable{
 					p2GameMove.setGameOver(false);
 					player1Wins = false;
 					
-				}
-				
-				//check if the board is full
-				if(serverBoard.isFull())
-				{
-					p2GameMove.setGameOver(null);
 				}
 				
 				//inform player2 of result
@@ -149,11 +150,11 @@ public class HandleGameSession implements Runnable{
 		}
 		catch(ClassNotFoundException ce)
 		{
-			ce.printStackTrace();
+			Log.printServer(ce.getMessage());
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			Log.printServer(e.getMessage());
 		}
 		
 		GameUniverse.removeGame(myGameName);
