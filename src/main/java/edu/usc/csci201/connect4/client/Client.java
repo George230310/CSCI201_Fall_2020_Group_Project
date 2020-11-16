@@ -3,6 +3,7 @@ package edu.usc.csci201.connect4.client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -240,6 +241,11 @@ public class Client
 		{
 			e.printStackTrace();
 			Log.printClient("Lost connection to host with message " + e.getMessage());
+		}
+		catch (ConnectException e)
+		{
+			Log.println("Error, Could not connect to Server");
+			return;
 		}
 		catch (IOException e)
 		{
