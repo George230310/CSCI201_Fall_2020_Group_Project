@@ -217,7 +217,6 @@ public class Client
 					"{email} {password}"
 			});
 			put("quit", new String[0]);
-			put("guest", new String[0]);
 			put("play", new String[0]);
 			put("highscore", new String[0]);
 		}
