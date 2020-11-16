@@ -69,6 +69,7 @@ public class BoardTest {
 	//Makes sure no exceptions are thrown
 	@Test
 	public void testSingleConstructor() {
+		@SuppressWarnings("unused")
 		Board board = new Board();
 	}
 
