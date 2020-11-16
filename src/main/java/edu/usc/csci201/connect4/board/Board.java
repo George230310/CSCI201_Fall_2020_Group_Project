@@ -287,4 +287,8 @@ public class Board
 		
 		return 0;
 	}
+
+	public int[][] getBoard() {
+		return board;
+	}
 }
