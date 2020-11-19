@@ -40,6 +40,7 @@ public class Connect4GUI extends Application {
 	private int NUM_COLUMNS = 8;
 	private int NUM_ROWS = 7;
 	private Pane circlePane = new Pane(); // circles represent player moves
+	private Thread clientThread;
 	
 	// TODO: setup fxml and controller to take in board parameter
 	public void init() {
@@ -96,25 +97,32 @@ public class Connect4GUI extends Application {
         dropAnimation.play();
     }
     
+    private void clearBoard() {
+    	
+    }
+    
     @Override
     public void start(final Stage primaryStage) {
         primaryStage.setTitle("Connect4Game");
-        // Initial Starting Pane
         final Parent res = createContentParent();
-        Button btn = new Button();
-        btn.setText("Start Game");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                System.out.println("Starting Game");
-                primaryStage.setScene(new Scene(res, 600, 600));
-            }
-        });
-        StackPane starter = new StackPane();
-        starter.getChildren().add(btn);
-        primaryStage.setScene(new Scene(starter, 300, 250));
+        primaryStage.setScene(new Scene(res, 580, 505));
+        // Initial Starting Pane
+        clearBoard();
+//        Button btn = new Button();
+//        btn.setText("Start Game");
+//        btn.setOnAction(new EventHandler<ActionEvent>() {
+//            public void handle(ActionEvent event) {
+//                System.out.println("Starting Game");
+//                primaryStage.setScene(new Scene(res, 600, 600));
+//            }
+//        });
+//        StackPane starter = new StackPane();
+//        starter.getChildren().add(btn);
+//        primaryStage.setScene(new Scene(starter, 300, 250));
+        primaryStage.setResizable(false);
         primaryStage.show();
         
-        new Thread(() -> {
+        clientThread = new Thread(() -> {
         
 	        scanner = new Scanner(System.in);
 	
@@ -145,7 +153,14 @@ public class Connect4GUI extends Application {
 			}
 	
 			Log.println("Thanks for playing!");
-        }).start();
+			
+			Platform.exit();
+        });
+        clientThread.start();
+    }
+    
+    public void stop() {
+    	isTerminated = true;
     }
     
     public static void main(String[] args) {
@@ -162,11 +177,13 @@ public class Connect4GUI extends Application {
 	//talks to HandleGameSession
 		private void PlayGame(ObjectInputStream in, ObjectOutputStream out, Boolean isP1)
 		{
+			Platform.runLater(() -> clearBoard());
+			
 			Board playerBoard = new Board();
 			Boolean p1Wins = null;
 			
 			//print the board first
-			playerBoard.printBoard();
+			//playerBoard.printBoard();
 			
 			while(true)
 			{
@@ -225,7 +242,7 @@ public class Connect4GUI extends Application {
 						playerBoard.placePiece(otherMove, false);
 						Platform.runLater(() -> placeCircle(6-playerBoard.getLastRow(), playerBoard.getLastCol()-1, "YELLOW"));
 						//print board state after my move
-						playerBoard.printBoard();
+						//playerBoard.printBoard();
 						Log.printConsole(p2GameMove.getResponse());
 						
 						if(p2GameMove.isGameOver().booleanValue())
@@ -244,7 +261,7 @@ public class Connect4GUI extends Application {
 						playerBoard.placePiece(otherMove, true);
 						Platform.runLater(() -> placeCircle(6-playerBoard.getLastRow(), playerBoard.getLastCol()-1, "RED"));
 						//print board state after my move
-						playerBoard.printBoard();
+						//playerBoard.printBoard();
 						Log.printConsole(p1GameMove.getResponse());
 						
 						if(p1GameMove.isGameOver().booleanValue())
@@ -277,7 +294,7 @@ public class Connect4GUI extends Application {
 						}
 						
 						//print board state after my move
-						playerBoard.printBoard();
+						//playerBoard.printBoard();
 						
 						//generate game command
 						GameCommand p2GameMove = new GameCommand(myMove);
