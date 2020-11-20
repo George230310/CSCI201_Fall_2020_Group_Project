@@ -50,7 +50,7 @@ public class Connect4GUI extends Application {
 	private Stage stage;
 	
 	private TextArea ta = new TextArea();
-	private TextField tf = new TextField();
+	private TextField tf = new TextField("");
 	
 	// TODO: setup fxml and controller to take in board parameter
 	public void init() {
@@ -186,13 +186,23 @@ public class Connect4GUI extends Application {
 			catch (UnknownHostException e)
 			{
 				e.printStackTrace();
-				Platform.runLater(() -> addText("Lost connection to host with message " + e.getMessage()));
+				Platform.runLater(() -> addText("Lost connection to host with message " + e.getMessage() + "\nPress enter to close window"));
+				getText();
+				isTerminated = true;
 			}
 			catch (IOException e)
 			{
-				Platform.runLater(() -> addText("IOException with error " + e.getMessage()));
+				Platform.runLater(() -> addText("IOException with error " + e.getMessage() + "\nPress enter to close window"));
+				getText();
+				isTerminated = true;
 			}
-	
+			
+			String welcome ="==========================================\n\n" +
+							"           Welcome to Connect 4!          \n\n" +
+							"==========================================\n" +
+							"\nType help for a list of commands\n";
+			Platform.runLater(() -> addText(welcome));
+			
 			while (!isTerminated)
 			{
 				//Keeps taking commands until 
@@ -420,7 +430,6 @@ public class Connect4GUI extends Application {
 					"{email} {password}"
 			});
 			put("quit", new String[0]);
-			put("guest", new String[0]);
 			put("play", new String[0]);
 			put("highscore", new String[0]);
 		}
@@ -624,15 +633,21 @@ public class Connect4GUI extends Application {
 			//on how to use the command
 			if (cmds.containsKey(args[1]))
 			{
-				Platform.runLater(() -> addText("Commands for " + args[1] + ": "));
-				StringBuffer sb = new StringBuffer(args[1] + " [");
-				
-				//Looks in the HashMap for the command given and 
-				//appends the input needed for the given command
-				//to sb
-				for (String subcmd : cmds.get(args[1]))
-					sb.append(subcmd + ", ");
-				Platform.runLater(() -> addText(sb.toString() + "]"));
+				if(cmds.get(args[1]).length != 0) {
+					Platform.runLater(() -> addText("Arguments for " + args[1] + ": "));
+					StringBuffer sb = new StringBuffer(args[1] + " ");
+					
+					//Looks in the HashMap for the command given and 
+					//appends the input needed for the given command
+					//to sb
+					for (String subcmd : cmds.get(args[1]))
+						sb.append(subcmd + ", ");
+					sb.delete(sb.length() - 2, sb.length());
+					Platform.runLater(() -> addText(sb.toString()));
+				} else {
+					Platform.runLater(() -> addText("No arguments for " + args[1] + " command"));
+
+				}
 			}
 			
 			//Command is not in our HashMap
@@ -645,15 +660,16 @@ public class Connect4GUI extends Application {
 		//No command was given after the help keyword
 		else
 		{
-			Platform.runLater(() -> addText("**** Welcome to Connect4! ****\n"));
+			Platform.runLater(() -> addText("================= Commands ================="));
 			String printme = "";
 			for (String cmd : cmds.keySet())
 			{
 				printme += cmd + ", ";
 			}
-			final String printme2 = printme;
+			final String printme2 = printme.substring(0, printme.length() - 2);
 			Platform.runLater(() -> addText(printme2));
-			Platform.runLater(() -> addText("\n****** * * **** * *  *******"));
+			Platform.runLater(() -> addText("\nType help {command} for additional info"));
+			Platform.runLater(() -> addText("============================================"));
 		}
 	}
 }
