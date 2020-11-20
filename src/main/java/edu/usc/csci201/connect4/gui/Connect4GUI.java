@@ -34,6 +34,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
  
 public class Connect4GUI extends Application {
@@ -41,6 +42,7 @@ public class Connect4GUI extends Application {
 	private int NUM_ROWS = 7;
 	private Pane circlePane = new Pane(); // circles represent player moves
 	private Thread clientThread;
+	private Stage stage;
 	
 	// TODO: setup fxml and controller to take in board parameter
 	public void init() {
@@ -51,6 +53,7 @@ public class Connect4GUI extends Application {
 	private Parent createContentParent() {
 		Pane root = new Pane();
 		Shape theBoard = makeBoard();
+		circlePane = new Pane();
 		root.getChildren().add(circlePane);
 		root.getChildren().add(theBoard);
 		
@@ -98,11 +101,13 @@ public class Connect4GUI extends Application {
     }
     
     private void clearBoard() {
-    	
+    	final Parent res = createContentParent();
+        stage.setScene(new Scene(res, 580, 505));
     }
     
     @Override
     public void start(final Stage primaryStage) {
+    	stage = primaryStage;
         primaryStage.setTitle("Connect4Game");
         final Parent res = createContentParent();
         primaryStage.setScene(new Scene(res, 580, 505));
@@ -185,7 +190,7 @@ public class Connect4GUI extends Application {
 			//print the board first
 			//playerBoard.printBoard();
 			
-			while(true)
+			while(!isTerminated)
 			{
 				try
 				{
@@ -218,7 +223,7 @@ public class Connect4GUI extends Application {
 						
 						
 						//print board state after my move
-						playerBoard.printBoard();
+						//playerBoard.printBoard();
 						
 						//generate game command
 						GameCommand p1GameMove = new GameCommand(myMove);
