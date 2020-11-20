@@ -50,7 +50,7 @@ public class Connect4GUI extends Application {
 	private Stage stage;
 	
 	private TextArea ta = new TextArea();
-	private TextField tf = new TextField("");
+	private TextField tf = new TextField("Enter Commands Here");
 	
 	// TODO: setup fxml and controller to take in board parameter
 	public void init() {
