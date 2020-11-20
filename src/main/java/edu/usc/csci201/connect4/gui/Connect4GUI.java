@@ -84,13 +84,6 @@ public class Connect4GUI extends Application {
 		topPane.add(ta, 1, 0);
 		root.add(topPane, 0, 0);
 		root.add(tf,0,1);
-//		textPane.resize(100, 450);
-//		textPane.add(ta, 0, 0);
-//		textPane.add(tf, 0, 1);
-		
-		
-		//root.add(textPane, 1, 0);
-		//root.add(tf, 1, 1);
 		return root;
 	}
 	
@@ -155,7 +148,7 @@ public class Connect4GUI extends Application {
     
     private void clearBoard() {
     	final Parent res = createContentParent();
-        stage.setScene(new Scene(res, 780, 535));
+        stage.setScene(new Scene(res, 980, 535));
     }
     
     @Override
@@ -203,7 +196,7 @@ public class Connect4GUI extends Application {
 			while (!isTerminated)
 			{
 				//Keeps taking commands until 
-				if (handleCommand(syncPrompt("> ")))
+				if (handleCommand(syncPrompt("")))
 					handleResponse();
 			}
 	
@@ -559,15 +552,6 @@ public class Connect4GUI extends Application {
 				try
 				{
 					String line = getText();
-					while(true) {
-						synchronized (input) {
-							if(input != "") {
-								line = input;
-								input = "";
-								break;
-							}
-						}
-					}
 					option = Integer.parseInt(line);
 					
 					if(option <= 0 || option > 2)
