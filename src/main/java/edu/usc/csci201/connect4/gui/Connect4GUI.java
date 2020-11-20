@@ -3,10 +3,14 @@ package edu.usc.csci201.connect4.gui;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StringReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import edu.usc.csci201.connect4.board.Board;
 import edu.usc.csci201.connect4.server.Server;
@@ -22,19 +26,20 @@ import edu.usc.csci201.connect4.utils.Log;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
  
 public class Connect4GUI extends Application {
@@ -44,6 +49,9 @@ public class Connect4GUI extends Application {
 	private Thread clientThread;
 	private Stage stage;
 	
+	private TextArea ta = new TextArea();
+	private TextField tf = new TextField();
+	
 	// TODO: setup fxml and controller to take in board parameter
 	public void init() {
 		Parameters params = getParameters();
@@ -51,18 +59,44 @@ public class Connect4GUI extends Application {
 	
 	// Add Board to StackPane
 	private Parent createContentParent() {
-		Pane root = new Pane();
+		GridPane root = new GridPane();
+		GridPane topPane = new GridPane();
 		Shape theBoard = makeBoard();
 		circlePane = new Pane();
-		root.getChildren().add(circlePane);
-		root.getChildren().add(theBoard);
+		topPane.add(circlePane, 0, 0);
+		topPane.add(theBoard,0 ,0);
 		
+		ta.setWrapText(true);
+		ta.setEditable(false);
+		tf.setOnKeyPressed(new EventHandler<KeyEvent>() {
+		    @Override
+		    public void handle(KeyEvent keyEvent) {
+		        if (keyEvent.getCode() == KeyCode.ENTER)  {
+		            String text = tf.getText();
+		            synchronized (input) {
+		            	input = text;
+		            }
+		            tf.setText("");
+		        }
+		    }
+		});
+		
+		topPane.add(ta, 1, 0);
+		root.add(topPane, 0, 0);
+		root.add(tf,0,1);
+//		textPane.resize(100, 450);
+//		textPane.add(ta, 0, 0);
+//		textPane.add(tf, 0, 1);
+		
+		
+		//root.add(textPane, 1, 0);
+		//root.add(tf, 1, 1);
 		return root;
 	}
 	
 	// Make a board with holes
 	private Shape makeBoard() {
-		Shape board = new Rectangle(75 * (NUM_COLUMNS), 75 * (NUM_ROWS));
+		Shape board = new Rectangle(75 * (NUM_COLUMNS) - 15, 75 * (NUM_ROWS) - 15);
 		
 		for(int rowCounter = 0; rowCounter < NUM_ROWS-1; rowCounter++) {
 			for(int colCounter = 0; colCounter < NUM_COLUMNS-1; colCounter++) {
@@ -78,6 +112,25 @@ public class Connect4GUI extends Application {
 		}
 		board.setFill(Color.BLUE);
 		return board;
+	}
+	
+	//Add text to textbox
+	private void addText(String text) {
+		ta.appendText(text + "\n");
+	}
+	
+	private String getText() {
+		String response;
+		while(true) {
+			synchronized (input) {
+				if(input != "") {
+					response = input;
+					input = "";
+					break;
+				}
+			}
+		}
+		return response;
 	}
 	
 	// Takes row and col and color and places it accordingly 
@@ -102,15 +155,15 @@ public class Connect4GUI extends Application {
     
     private void clearBoard() {
     	final Parent res = createContentParent();
-        stage.setScene(new Scene(res, 580, 505));
+        stage.setScene(new Scene(res, 780, 535));
     }
     
     @Override
     public void start(final Stage primaryStage) {
     	stage = primaryStage;
         primaryStage.setTitle("Connect4Game");
-        final Parent res = createContentParent();
-        primaryStage.setScene(new Scene(res, 580, 505));
+        //final Parent res = createContentParent();
+        //primaryStage.setScene(new Scene(res, 580, 505)); //580 505
         // Initial Starting Pane
         clearBoard();
 //        Button btn = new Button();
@@ -124,18 +177,15 @@ public class Connect4GUI extends Application {
 //        StackPane starter = new StackPane();
 //        starter.getChildren().add(btn);
 //        primaryStage.setScene(new Scene(starter, 300, 250));
-        primaryStage.setResizable(false);
+        //primaryStage.setResizable(false);
         primaryStage.show();
         
         clientThread = new Thread(() -> {
-        
-	        scanner = new Scanner(System.in);
-	
 			try
 			{
 				socket = new Socket("localhost", Server.port);
 	
-				Log.printClient("Connected to Server on port " + Server.port);
+				Platform.runLater(() -> addText("Connected to Server on port " + Server.port));
 				os = new ObjectOutputStream(socket.getOutputStream());
 				is = new ObjectInputStream(socket.getInputStream());
 	
@@ -143,11 +193,11 @@ public class Connect4GUI extends Application {
 			catch (UnknownHostException e)
 			{
 				e.printStackTrace();
-				Log.printClient("Lost connection to host with message " + e.getMessage());
+				Platform.runLater(() -> addText("Lost connection to host with message " + e.getMessage()));
 			}
 			catch (IOException e)
 			{
-				Log.printClient("IOException with error " + e.getMessage());
+				Platform.runLater(() -> addText("IOException with error " + e.getMessage()));
 			}
 	
 			while (!isTerminated)
@@ -157,7 +207,7 @@ public class Connect4GUI extends Application {
 					handleResponse();
 			}
 	
-			Log.println("Thanks for playing!");
+			Platform.runLater(() -> addText("Thanks for playing!"));
 			
 			Platform.exit();
         });
@@ -173,11 +223,11 @@ public class Connect4GUI extends Application {
     }
     
     //Client Stuff
-    private Scanner scanner;
 	private ObjectOutputStream os;
 	private ObjectInputStream is;
 	private Socket socket;
 	private boolean isTerminated = false;
+	private String input = "";
 	
 	//talks to HandleGameSession
 		private void PlayGame(ObjectInputStream in, ObjectOutputStream out, Boolean isP1)
@@ -199,25 +249,25 @@ public class Connect4GUI extends Application {
 						//get column input
 						boolean input_fails = true;
 						int myMove = 0;
-						Log.printConsole("It is your turn now, enter an integer for column: ");
+						Platform.runLater(() -> addText("It is your turn now, enter an integer for column: "));
 						
 						//validate move
 						while(input_fails)
 						{
 							try
 							{
-								myMove = Integer.parseInt(scanner.nextLine());
+								myMove = Integer.parseInt(getText());
 								playerBoard.placePiece(myMove, true);
 								Platform.runLater(() -> placeCircle(6-playerBoard.getLastRow(), playerBoard.getLastCol()-1, "RED"));
 								input_fails = false;
 							}
 							catch(NumberFormatException e)
 							{
-								Log.printConsole("Please enter an integer: ");
+								Platform.runLater(() -> addText("Please enter an integer: "));
 							}
 							catch(RuntimeException e)
 							{
-								Log.printConsole("This is illegal move, please enter a valid move: ");
+								Platform.runLater(() -> addText("This is illegal move, please enter a valid move: "));
 							}
 						}
 						
@@ -240,7 +290,7 @@ public class Connect4GUI extends Application {
 						}
 						
 						//print waiting message
-						Log.printConsole("Waiting for player2 to move...");
+						Platform.runLater(() -> addText("Waiting for player2 to move..."));
 						
 						GameCommand p2GameMove = (GameCommand)in.readObject();
 						int otherMove = p2GameMove.getMove();
@@ -248,7 +298,7 @@ public class Connect4GUI extends Application {
 						Platform.runLater(() -> placeCircle(6-playerBoard.getLastRow(), playerBoard.getLastCol()-1, "YELLOW"));
 						//print board state after my move
 						//playerBoard.printBoard();
-						Log.printConsole(p2GameMove.getResponse());
+						Platform.runLater(() -> addText(p2GameMove.getResponse()));
 						
 						if(p2GameMove.isGameOver().booleanValue())
 						{
@@ -259,7 +309,7 @@ public class Connect4GUI extends Application {
 					else
 					{
 						//print waiting message
-						Log.printConsole("Waiting for player1 to move...");
+						Platform.runLater(() -> addText("Waiting for player1 to move..."));
 						
 						GameCommand p1GameMove = (GameCommand)in.readObject();
 						int otherMove = p1GameMove.getMove();
@@ -267,7 +317,7 @@ public class Connect4GUI extends Application {
 						Platform.runLater(() -> placeCircle(6-playerBoard.getLastRow(), playerBoard.getLastCol()-1, "RED"));
 						//print board state after my move
 						//playerBoard.printBoard();
-						Log.printConsole(p1GameMove.getResponse());
+						Platform.runLater(() -> addText(p1GameMove.getResponse()));
 						
 						if(p1GameMove.isGameOver().booleanValue())
 						{
@@ -278,23 +328,23 @@ public class Connect4GUI extends Application {
 						//get column input
 						boolean input_fails = true;
 						int myMove = 0;
-						Log.printConsole("It is your turn now, enter an integer for column: ");
+						Platform.runLater(() -> addText("It is your turn now, enter an integer for column: "));
 						while(input_fails)
 						{
 							try
 							{
-								myMove = Integer.parseInt(scanner.nextLine());
+								myMove = Integer.parseInt(getText());
 								playerBoard.placePiece(myMove, false);
 								Platform.runLater(() -> placeCircle(6-playerBoard.getLastRow(), playerBoard.getLastCol()-1, "YELLOW"));
 								input_fails = false;
 							}
 							catch(NumberFormatException e)
 							{
-								Log.printConsole("Please enter an integer: ");
+								Platform.runLater(() -> addText("Please enter an integer: "));
 							}
 							catch(RuntimeException re)
 							{
-								Log.printConsole("This is illegal move, please enter a valid move: ");
+								Platform.runLater(() -> addText("This is illegal move, please enter a valid move: "));
 							}
 						}
 						
@@ -318,7 +368,7 @@ public class Connect4GUI extends Application {
 				}
 				catch(ClassNotFoundException ce)
 				{
-					Log.printConsole(ce.getMessage());
+					Platform.runLater(() -> addText(ce.getMessage()));
 				}
 				catch(IOException ie)
 				{
@@ -330,27 +380,27 @@ public class Connect4GUI extends Application {
 			if(p1Wins == null)
 			{
 				//tie
-				Log.printConsole("Tie");
+				Platform.runLater(() -> addText("Tie"));
 			}
 			else if(p1Wins.booleanValue() && isP1)
 			{
 				//player 1 wins
-				Log.printConsole("You win!");
+				Platform.runLater(() -> addText("You win!"));
 			}
 			else if(p1Wins.booleanValue() && !isP1)
 			{
 				//player 1 loses
-				Log.printConsole("You lose. Maybe try another round?");
+				Platform.runLater(() -> addText("You lose. Maybe try another round?"));
 			}
 			else if(!p1Wins.booleanValue() && !isP1)
 			{
 				//player 2 wins
-				Log.printConsole("You win!");
+				Platform.runLater(() -> addText("You win!"));
 			}
 			else
 			{
 				//player 2 loses
-				Log.printConsole("You lose. Maybe try another round?");
+				Platform.runLater(() -> addText("You lose. Maybe try another round?"));
 			}
 		}
 
@@ -387,7 +437,8 @@ public class Connect4GUI extends Application {
 	public String syncPrompt(String prompt)
 	{
 		Log.print(prompt);
-		String response = scanner.nextLine();
+		String response = getText();
+		
 		return response;
 	}
 
@@ -399,7 +450,7 @@ public class Connect4GUI extends Application {
 			//ClientCommand is an interface which gets/sets responses
 			ClientCommand rawCmd = (ClientCommand) is.readObject();
 			if (rawCmd.getResponse() != null && rawCmd.getResponse() != "")
-				Log.printServer(rawCmd.getResponse());
+				Platform.runLater(() -> addText(rawCmd.getResponse()));
 			
 			//handle the create lobby response
 			if(rawCmd.getClass() == CreateLobbyCommand.class)
@@ -407,11 +458,11 @@ public class Connect4GUI extends Application {
 				if(((CreateLobbyCommand)rawCmd).isSuccessful())
 				{
 					//waiting for a signal to start the game
-					Log.printClient("Waiting for another player to join...");
+					Platform.runLater(() -> addText("Waiting for another player to join..."));
 					ObjectInputStream gameIn = new ObjectInputStream(socket.getInputStream());
 					ObjectOutputStream gameOut = new ObjectOutputStream(socket.getOutputStream());
 					ClientCommand startSignal = (ClientCommand)gameIn.readObject();
-					Log.printClient(startSignal.getResponse());
+					Platform.runLater(() -> addText(startSignal.getResponse()));
 					
 					//all game logics go below
 					PlayGame(gameIn, gameOut, ((StartGameCommand)startSignal).isPlayer1());
@@ -422,11 +473,11 @@ public class Connect4GUI extends Application {
 				if(((JoinLobbyCommand)rawCmd).isSuccessful())
 				{
 					//inform the player the game shall start
-					Log.printClient("The game shall start in a moment...");
+					Platform.runLater(() -> addText("The game shall start in a moment..."));
 					ObjectInputStream gameIn = new ObjectInputStream(socket.getInputStream());
 					ObjectOutputStream gameOut = new ObjectOutputStream(socket.getOutputStream());
 					ClientCommand startSignal = (ClientCommand)gameIn.readObject();
-					Log.printClient(startSignal.getResponse());
+					Platform.runLater(() -> addText(startSignal.getResponse()));
 					
 					
 					//all games logic go below
@@ -436,13 +487,13 @@ public class Connect4GUI extends Application {
 		}
 		catch (ClassNotFoundException e)
 		{
-			Log.printConsole("Failed to parse object from reading object stream. "
-					+ e.getMessage());
+			Platform.runLater(() -> addText("Failed to parse object from reading object stream. "
+					+ e.getMessage()));
 		}
 		catch (IOException e)
 		{
-			Log.printConsole(
-					"Failed to read object from the connected socket. " + e.getMessage());
+			Platform.runLater(() -> addText(
+					"Failed to read object from the connected socket. " + e.getMessage()));
 		}
 
 	}
@@ -494,10 +545,10 @@ public class Connect4GUI extends Application {
 		else if(args[0].equals("play"))
 		{
 			//continue to interact as a guest
-			Log.printConsole("You will start to play, if you haven't logged in, your scores will not be saved");
-			Log.printConsole("Please select one of the following options:");
-			Log.printConsole("1) Create a new game");
-			Log.printConsole("2) Join an existing game");
+			Platform.runLater(() -> addText("You will start to play, if you haven't logged in, your scores will not be saved"));
+			Platform.runLater(() -> addText("Please select one of the following options:"));
+			Platform.runLater(() -> addText("1) Create a new game"));
+			Platform.runLater(() -> addText("2) Join an existing game"));
 			
 			//decide to create a new game or join an existing one
 			//also do error checking for input
@@ -507,7 +558,16 @@ public class Connect4GUI extends Application {
 			{
 				try
 				{
-					String line = scanner.nextLine();
+					String line = getText();
+					while(true) {
+						synchronized (input) {
+							if(input != "") {
+								line = input;
+								input = "";
+								break;
+							}
+						}
+					}
 					option = Integer.parseInt(line);
 					
 					if(option <= 0 || option > 2)
@@ -519,26 +579,26 @@ public class Connect4GUI extends Application {
 				}
 				catch(NumberFormatException ne)
 				{
-					Log.printConsole("Cannot parse and interger, enter a new option: ");
+					Platform.runLater(() -> addText("Cannot parse and interger, enter a new option: "));
 				}
 				catch(RuntimeException re)
 				{
-					Log.printConsole("No such option, enter a new option: ");
+					Platform.runLater(() -> addText("No such option, enter a new option: "));
 				}
 			}
 			
 			//send create lobby command
 			if(option == 1)
 			{
-				Log.printConsole("Enter a new lobby name: ");
-				String lobbyName = scanner.nextLine();
+				Platform.runLater(() -> addText("Enter a new lobby name: "));
+				String lobbyName = getText();
 				command = new CreateLobbyCommand(lobbyName);
 			}
 			//send join lobby command
 			else
 			{
-				Log.printConsole("Enter the lobby name to join: ");
-				String lobbyName = scanner.nextLine();
+				Platform.runLater(() -> addText("Enter the lobby name to join: "));
+				String lobbyName = getText();
 				command = new JoinLobbyCommand(lobbyName);
 			}
 		}
@@ -546,7 +606,7 @@ public class Connect4GUI extends Application {
 		//unknown command input
 		else
 		{
-			Log.println("Unknown command '" + cmd + "'");
+			Platform.runLater(() -> addText("Unknown command '" + cmd + "'"));
 		}
 
 		// Run the command if it's not null
@@ -559,8 +619,8 @@ public class Connect4GUI extends Application {
 			catch (IOException e)
 			{
 				e.printStackTrace();
-				Log.printClient("Failed to write register command to the server. "
-						+ e.getMessage());
+				Platform.runLater(() -> addText("Failed to write register command to the server. "
+						+ e.getMessage()));
 			}
 			return true;
 		}
@@ -580,7 +640,7 @@ public class Connect4GUI extends Application {
 			//on how to use the command
 			if (cmds.containsKey(args[1]))
 			{
-				Log.printConsole("Commands for " + args[1] + ": ");
+				Platform.runLater(() -> addText("Commands for " + args[1] + ": "));
 				StringBuffer sb = new StringBuffer(args[1] + " [");
 				
 				//Looks in the HashMap for the command given and 
@@ -588,25 +648,28 @@ public class Connect4GUI extends Application {
 				//to sb
 				for (String subcmd : cmds.get(args[1]))
 					sb.append(subcmd + ", ");
-				Log.printConsole(sb.toString() + "]");
+				Platform.runLater(() -> addText(sb.toString() + "]"));
 			}
 			
 			//Command is not in our HashMap
 			else
 			{
-				Log.printConsole("Could not find help for command " + args[1]);
+				Platform.runLater(() -> addText("Could not find help for command " + args[1]));
 			}
 		}
 		
 		//No command was given after the help keyword
 		else
 		{
-			Log.println("**** Welcome to Connect4! ****\n");
+			Platform.runLater(() -> addText("**** Welcome to Connect4! ****\n"));
+			String printme = "";
 			for (String cmd : cmds.keySet())
 			{
-				Log.print(cmd + ", ");
+				printme += cmd + ", ";
 			}
-			Log.println("\n****** * * **** * *  *******");
+			final String printme2 = printme;
+			Platform.runLater(() -> addText(printme2));
+			Platform.runLater(() -> addText("\n****** * * **** * *  *******"));
 		}
 	}
 }
