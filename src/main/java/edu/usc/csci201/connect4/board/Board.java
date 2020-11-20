@@ -291,4 +291,8 @@ public class Board
 	public int[][] getBoard() {
 		return board;
 	}
+	
+	public int getLastRow() {return currRow;}
+	public int getLastCol() {return currCol;}
+	
 }
