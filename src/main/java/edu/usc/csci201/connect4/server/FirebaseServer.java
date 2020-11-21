@@ -211,7 +211,9 @@ public class FirebaseServer {
 				    } else if (val.getClass() == HashMap.class) {
 				    	StringBuffer sb = new StringBuffer("*** Highscores ***\n");
 				    	for (Entry<String, Long> entry : ((HashMap<String, Long>) val).entrySet()) {
-				    		if (masterUsers.containsKey(entry.getKey())) sb.append(masterUsers.get(entry.getKey()) + " - " + entry.getValue());
+				    		if (masterUsers.containsKey(entry.getKey())) { 
+				    			sb.append(masterUsers.get(entry.getKey()) + " - " + entry.getValue() +"\n"); 
+				    		}
 				    	}
 				    	listener.onGetHighscores(sb.toString());
 
