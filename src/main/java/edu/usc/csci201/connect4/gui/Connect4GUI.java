@@ -475,13 +475,15 @@ public class Connect4GUI extends Application {
 		//register command, which should be followed by an email and password
 		else if (args[0].equals("register"))
 		{
-			command = new RegisterCommand(args[1], args[2]);
+			if (args.length > 2) command = new RegisterCommand(args[1], args[2]);
+			else Log.printClient("You are missing 1 or more arguments.");
 		}
 		
 		//login command, which should be followed by an email and password
 		else if (args[0].equals("login"))
 		{
-			command = new LoginCommand(args[1], args[2]);
+			if (args.length > 2) command = new LoginCommand(args[1], args[2]);
+			else Log.printClient("You are missing 1 or more arguments.");
 		}
 		
 		//high score command, which showcases the high score
