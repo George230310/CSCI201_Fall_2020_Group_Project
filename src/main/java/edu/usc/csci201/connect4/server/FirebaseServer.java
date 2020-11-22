@@ -88,6 +88,9 @@ public class FirebaseServer {
 					errorMessage = e.getMessage();
 				} catch (IllegalArgumentException e) {
 					errorMessage = e.getMessage();
+					if(errorMessage == null) {
+						errorMessage = "Unable to register the user, make sure you provided a valid email address and password";
+					}
 				} finally {
 					// Invoke the register callback of listener.onRegister or listener.onRegisterFail
 					if (errorMessage.isBlank() && listener != null) listener.onRegister(user, sender);

@@ -12,6 +12,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.management.JMRuntimeException;
+
 import edu.usc.csci201.connect4.board.Board;
 import edu.usc.csci201.connect4.server.Server;
 import edu.usc.csci201.connect4.server.ClientHandler.ClientCommand;
@@ -33,6 +35,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -80,7 +83,13 @@ public class Connect4GUI extends Application {
 		        }
 		    }
 		});
-		
+		tf.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		    @Override
+		    public void handle(MouseEvent mouseEvent) {
+		    	if(tf.getText().equalsIgnoreCase("Enter Commands Here"))
+		    		tf.setText("");
+		    }
+		});
 		topPane.add(ta, 1, 0);
 		root.add(topPane, 0, 0);
 		root.add(tf,0,1);
@@ -120,6 +129,9 @@ public class Connect4GUI extends Application {
 					response = input;
 					input = "";
 					break;
+				}
+				if(isTerminated) {
+					throw new JMRuntimeException("Window was closed");
 				}
 			}
 		}
@@ -187,13 +199,19 @@ public class Connect4GUI extends Application {
 			{
 				e.printStackTrace();
 				Platform.runLater(() -> addText("Lost connection to host with message " + e.getMessage() + "\nPress enter to close window"));
-				getText();
+				try {
+					getText();
+				}
+				catch (Exception ee) {}
 				isTerminated = true;
 			}
 			catch (IOException e)
 			{
 				Platform.runLater(() -> addText("IOException with error " + e.getMessage() + "\nPress enter to close window"));
-				getText();
+				try {
+					getText();
+				}
+				catch (Exception ee) {}
 				isTerminated = true;
 			}
 			
@@ -205,9 +223,14 @@ public class Connect4GUI extends Application {
 			
 			while (!isTerminated)
 			{
+				try {
 				//Keeps taking commands until 
-				if (handleCommand(syncPrompt("")))
-					handleResponse();
+					if (handleCommand(syncPrompt("")))
+						handleResponse();
+				}
+				catch(JMRuntimeException e) {
+					
+				}
 			}
 	
 			Platform.runLater(() -> addText("Thanks for playing!"));
@@ -267,6 +290,9 @@ public class Connect4GUI extends Application {
 							catch(NumberFormatException e)
 							{
 								Platform.runLater(() -> addText("Please enter an integer: "));
+							}
+							catch(JMRuntimeException e) {
+								throw e;
 							}
 							catch(RuntimeException e)
 							{
@@ -344,6 +370,9 @@ public class Connect4GUI extends Application {
 							catch(NumberFormatException e)
 							{
 								Platform.runLater(() -> addText("Please enter an integer: "));
+							}
+							catch(JMRuntimeException e) {
+								throw e;
 							}
 							catch(RuntimeException re)
 							{
@@ -573,6 +602,9 @@ public class Connect4GUI extends Application {
 				catch(NumberFormatException ne)
 				{
 					Platform.runLater(() -> addText("Cannot parse and interger, enter a new option: "));
+				}
+				catch (JMRuntimeException e) {
+					throw e;
 				}
 				catch(RuntimeException re)
 				{
