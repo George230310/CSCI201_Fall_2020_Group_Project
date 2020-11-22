@@ -3,6 +3,7 @@ package edu.usc.csci201.connect4.client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -217,7 +218,6 @@ public class Client
 					"{email} {password}"
 			});
 			put("quit", new String[0]);
-			put("guest", new String[0]);
 			put("play", new String[0]);
 			put("highscore", new String[0]);
 		}
@@ -240,12 +240,26 @@ public class Client
 		catch (UnknownHostException e)
 		{
 			e.printStackTrace();
-			Log.printClient("Lost connection to host with message " + e.getMessage());
+			Log.printConsole("Lost connection to host with message " + e.getMessage());
+			return;
+		}
+		catch (ConnectException e)
+		{
+			Log.printConsole("Error, Could not connect to Server");
+			return;
 		}
 		catch (IOException e)
 		{
-			Log.printClient("IOException with error " + e.getMessage());
+			Log.printConsole("IOException with error " + e.getMessage());
+			return;
 		}
+		
+		Log.println("==========================================");
+		Log.println();
+		Log.println("           Welcome to Connect 4!          ");
+		Log.println();
+		Log.println("==========================================");
+		Log.println("\nType help for a list of commands\n");
 
 		while (!isTerminated)
 		{
@@ -454,15 +468,22 @@ public class Client
 			//on how to use the command
 			if (cmds.containsKey(args[1]))
 			{
-				Log.printConsole("Commands for " + args[1] + ": ");
-				StringBuffer sb = new StringBuffer(args[1] + " [");
 				
-				//Looks in the HashMap for the command given and 
-				//appends the input needed for the given command
-				//to sb
-				for (String subcmd : cmds.get(args[1]))
-					sb.append(subcmd + ", ");
-				Log.printConsole(sb.toString() + "]");
+				if(cmds.get(args[1]).length != 0) {
+					Log.println("Arguments for " + args[1] + ": ");
+					StringBuffer sb = new StringBuffer(args[1] + " ");
+					
+					//Looks in the HashMap for the command given and 
+					//appends the input needed for the given command
+					//to sb
+					for (String subcmd : cmds.get(args[1]))
+						sb.append(subcmd +", ");
+					sb.delete(sb.length() - 2, sb.length());
+					Log.println(sb.toString());
+				} else {
+					Log.println("No arguments for " + args[1] + " command");
+				}
+				
 			}
 			
 			//Command is not in our HashMap
@@ -475,12 +496,13 @@ public class Client
 		//No command was given after the help keyword
 		else
 		{
-			Log.println("**** Welcome to Connect4! ****\n");
+			Log.print("================= Commands =================\n ");
 			for (String cmd : cmds.keySet())
 			{
-				Log.print(cmd + ", ");
+				Log.print(cmd + " ");
 			}
-			Log.println("\n****** * * **** * *  *******");
+			Log.println("\n\n Type help {command} for additional info");
+			Log.println("============================================");
 		}
 	}
 }
